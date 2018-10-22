@@ -39,9 +39,7 @@ export declare class Sitka<MODULES = {}> {
     createStore(appstoreCreator?: AppStoreCreator): Store<{}> | null;
     register<SITKA_MODULE extends SitkaModule<ModuleState, MODULES>>(instances: SITKA_MODULE[]): void;
     private getDefaultState;
-    private static hasMethod;
     private createRoot;
-    private static getInstanceMethodNames;
     private doDispatch;
 }
 export declare const createAppStore: (intialState?: {}, reducersToCombine?: ReducersMapObject<any, Action<any>>[], middleware?: Middleware<{}, any, Dispatch<import("redux").AnyAction>>[], sagaRoot?: () => IterableIterator<{}>) => Store<any, import("redux").AnyAction>;

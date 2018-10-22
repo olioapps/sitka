@@ -42,6 +42,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var redux_1 = require("redux");
+var redux_logger_1 = require("redux-logger");
 var redux_saga_1 = __importDefault(require("redux-saga"));
 var effects_1 = require("redux-saga/effects");
 var createStateChangeKey = function (module) { return ("module_" + module + "_change_state").toUpperCase(); };
@@ -139,7 +140,7 @@ var Sitka = /** @class */ (function () {
     Sitka.prototype.register = function (instances) {
         var _this = this;
         instances.forEach(function (instance) {
-            var methodNames = Sitka.getInstanceMethodNames(instance, Object.prototype);
+            var methodNames = getInstanceMethodNames(instance, Object.prototype);
             var setters = methodNames.filter(function (m) { return m.indexOf("set") === 0; });
             var handlers = methodNames.filter(function (m) { return m.indexOf("handle") === 0; });
             var subscribers = instance.provideSubscriptions();
@@ -296,29 +297,9 @@ var Sitka = /** @class */ (function () {
             dispatch(action);
         }
     };
-    Sitka.hasMethod = function (obj, name) {
-        var desc = Object.getOwnPropertyDescriptor(obj, name);
-        return !!desc && typeof desc.value === "function";
-    };
-    Sitka.getInstanceMethodNames = function (obj, stop) {
-        var array = [];
-        var proto = Object.getPrototypeOf(obj);
-        while (proto && proto !== stop) {
-            Object.getOwnPropertyNames(proto).forEach(function (name) {
-                if (name !== "constructor") {
-                    if (Sitka.hasMethod(proto, name)) {
-                        array.push(name);
-                    }
-                }
-            });
-            proto = Object.getPrototypeOf(proto);
-        }
-        return array;
-    };
     return Sitka;
 }());
 exports.Sitka = Sitka;
-var redux_logger_1 = require("redux-logger");
 exports.createAppStore = function (intialState, reducersToCombine, middleware, sagaRoot) {
     if (intialState === void 0) { intialState = {}; }
     if (reducersToCombine === void 0) { reducersToCombine = []; }
@@ -335,5 +316,24 @@ exports.createAppStore = function (intialState, reducersToCombine, middleware, s
         sagaMiddleware.run(sagaRoot);
     }
     return store;
+};
+var hasMethod = function (obj, name) {
+    var desc = Object.getOwnPropertyDescriptor(obj, name);
+    return !!desc && typeof desc.value === "function";
+};
+var getInstanceMethodNames = function (obj, stop) {
+    var array = [];
+    var proto = Object.getPrototypeOf(obj);
+    while (proto && proto !== stop) {
+        Object.getOwnPropertyNames(proto).forEach(function (name) {
+            if (name !== "constructor") {
+                if (hasMethod(proto, name)) {
+                    array.push(name);
+                }
+            }
+        });
+        proto = Object.getPrototypeOf(proto);
+    }
+    return array;
 };
 //# sourceMappingURL=sitka.js.map

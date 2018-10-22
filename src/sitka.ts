@@ -9,13 +9,11 @@ import {
     ReducersMapObject, 
     Store,
 } from "redux"
-
+import { createLogger } from "redux-logger"
 import {
     SagaMiddleware,
 } from "redux-saga"
-
 import createSagaMiddleware from "redux-saga"
-
 import { all, apply, takeEvery } from "redux-saga/effects"
 
 export type SitkaModuleAction<T> = Partial<T> & { type: string } | Action
@@ -157,7 +155,7 @@ export class Sitka<MODULES = {}> {
         instances: SITKA_MODULE[],
     ): void {
         instances.forEach( instance => {
-            const methodNames = Sitka.getInstanceMethodNames(
+            const methodNames = getInstanceMethodNames(
                 instance,
                 Object.prototype,
             )
@@ -270,11 +268,6 @@ export class Sitka<MODULES = {}> {
             )
     }
 
-    private static hasMethod = (obj: {}, name: string) => {
-        const desc = Object.getOwnPropertyDescriptor(obj, name)
-        return !!desc && typeof desc.value === "function"
-    }
-
     private createRoot(): (() => IterableIterator<{}>) {
         const { sagas, registeredModules } = this
 
@@ -303,22 +296,6 @@ export class Sitka<MODULES = {}> {
         return root
     }
 
-    private static getInstanceMethodNames = (obj: {}, stop: {}) => {
-        const array: string[] = []
-        let proto = Object.getPrototypeOf(obj)
-        while (proto && proto !== stop) {
-            Object.getOwnPropertyNames(proto).forEach(name => {
-                if (name !== "constructor") {
-                    if (Sitka.hasMethod(proto, name)) {
-                        array.push(name)
-                    }
-                }
-            })
-            proto = Object.getPrototypeOf(proto)
-        }
-        return array
-    }
-
     private doDispatch(action: Action): void {
         const { dispatch } = this
         if (!!dispatch) {
@@ -326,8 +303,6 @@ export class Sitka<MODULES = {}> {
         }
     }
 }
-
-import { createLogger } from "redux-logger"
 
 export const createAppStore = (
     intialState: {} = {},
@@ -357,4 +332,25 @@ export const createAppStore = (
     }
 
     return store
+}
+
+const hasMethod = (obj: {}, name: string) => {
+    const desc = Object.getOwnPropertyDescriptor(obj, name)
+    return !!desc && typeof desc.value === "function"
+}
+
+const getInstanceMethodNames = (obj: {}, stop: {}) => {
+    const array: string[] = []
+    let proto = Object.getPrototypeOf(obj)
+    while (proto && proto !== stop) {
+        Object.getOwnPropertyNames(proto).forEach(name => {
+            if (name !== "constructor") {
+                if (hasMethod(proto, name)) {
+                    array.push(name)
+                }
+            }
+        })
+        proto = Object.getPrototypeOf(proto)
+    }
+    return array
 }

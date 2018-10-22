@@ -72,7 +72,7 @@ const store = sitka.createStore()
 
 This instance of the redux store can be injected into your application, for example using `react-redux`. Please see the section below for an example of how to use Sitka modules within a React application.
 
-## Integrating Sitka into an externally managed redux store
+## Adding Sitka to a redux store
 
 In the example below, we are using redux's `createStore` function to create a store. We provide for its arguments a merging of the reducers, sagas, and middleware returned from Sitka's `createSitkaMeta` function, with those you create normally. 
 
@@ -94,7 +94,7 @@ const reducersToCombine = [
 
 // non-sitka generator function
 function* incrementSaga(): IteratorIterable<{}> {
-    yield put( () => { type: "INC" })
+    yield put(() => { type: "INC" })
 }
 
 const middleware = [
@@ -118,3 +118,32 @@ const store: Store = createStore(
 
 sagaMiddleware.run(sagaRoot)
 ```
+
+The primary usecase for the above is to enhance a pre-exising redux store with sitka managed redux modules.
+
+# Using Sitka managed redux modules
+
+### Basic usage
+After you create a Sitka managed or integrated store, you can begin to change its state by calling methods on the modules. For example:
+
+```typescript
+// create a sitka instance and register a module
+const sitka = new Sitka<{readonly color: ColorModule}>()
+sitka.register([ new ColorModule() ])
+
+// create a wholly sitka-managed store
+const store = sitka.createStore()
+
+// print the current state of the store
+console.log(store.getState())
+// returns: { "color": null }
+
+// invoke the color module, and
+sitka.getModules().color.handleColor("red")
+// print the current state of the store
+console.log(store.getState())
+// returns: { "color": "red" }
+```
+
+### React web usage
+tbd

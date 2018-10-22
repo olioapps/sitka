@@ -66,7 +66,7 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
 
     provideSubscriptions(): SagaMeta[] {
         return [] 
-     }
+    }
  }
 
 export interface SagaMeta {

@@ -141,7 +141,6 @@ var Sitka = /** @class */ (function () {
         var _this = this;
         instances.forEach(function (instance) {
             var methodNames = getInstanceMethodNames(instance, Object.prototype);
-            var setters = methodNames.filter(function (m) { return m.indexOf("set") === 0; });
             var handlers = methodNames.filter(function (m) { return m.indexOf("handle") === 0; });
             var subscribers = instance.provideSubscriptions();
             var moduleName = instance.moduleName;
@@ -168,51 +167,35 @@ var Sitka = /** @class */ (function () {
                 // tslint:disable-next-line:no-any
                 instance[s] = patched;
             });
-            // create reducers for setters
-            setters.forEach(function (_) {
-                var reduxKey = instance.reduxKey();
-                var actionType = createStateChangeKey(reduxKey);
-                var defaultState = instance.defaultState;
-                var makeReducer = function (_reduxKey) {
-                    var prevReducer = reducersToCombine[_reduxKey];
-                    var reducer = function (state, action) {
-                        if (state === void 0) { state = defaultState; }
-                        if (action.type !== actionType) {
-                            return state;
-                        }
-                        // there was a previous reducer
-                        // evaluate it
-                        var previousReducerExisted = !!prevReducer;
-                        if (previousReducerExisted) {
-                            var result = prevReducer(state, action);
-                            if (result === defaultState) {
-                                return state;
-                            }
-                        }
-                        var type = createStateChangeKey(moduleName);
-                        var newState = Object.keys(action)
-                            .filter(function (k) { return k !== "type"; })
-                            .reduce(function (acc, k) {
-                            var _a, _b;
-                            var val = action[k];
-                            if (k === type) {
-                                return val;
-                            }
-                            if (val === null || typeof val === "undefined") {
-                                return Object.assign(acc, (_a = {},
-                                    _a[k] = null,
-                                    _a));
-                            }
-                            return Object.assign(acc, (_b = {},
-                                _b[k] = val,
-                                _b));
-                        }, Object.assign({}, state));
-                        return newState;
-                    };
-                    return reducer;
-                };
-                reducersToCombine[reduxKey] = makeReducer(reduxKey);
-            });
+            // create reducer
+            var reduxKey = instance.reduxKey();
+            var defaultState = instance.defaultState;
+            var actionType = createStateChangeKey(reduxKey);
+            reducersToCombine[reduxKey] = function (state, action) {
+                if (state === void 0) { state = defaultState; }
+                if (action.type !== actionType) {
+                    return state;
+                }
+                var type = createStateChangeKey(moduleName);
+                var newState = Object.keys(action)
+                    .filter(function (k) { return k !== "type"; })
+                    .reduce(function (acc, k) {
+                    var _a, _b;
+                    var val = action[k];
+                    if (k === type) {
+                        return val;
+                    }
+                    if (val === null || typeof val === "undefined") {
+                        return Object.assign(acc, (_a = {},
+                            _a[k] = null,
+                            _a));
+                    }
+                    return Object.assign(acc, (_b = {},
+                        _b[k] = val,
+                        _b));
+                }, Object.assign({}, state));
+                return newState;
+            };
             _this.registeredModules[moduleName] = instance;
         });
     };

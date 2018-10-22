@@ -159,7 +159,6 @@ export class Sitka<MODULES = {}> {
                 instance,
                 Object.prototype,
             )
-            const setters = methodNames.filter(m => m.indexOf("set") === 0)
             const handlers = methodNames.filter(m => m.indexOf("handle") === 0)
             const subscribers = instance.provideSubscriptions()
 
@@ -193,67 +192,45 @@ export class Sitka<MODULES = {}> {
                 // tslint:disable-next-line:no-any
                 instance[s] = patched
             })
-    
-            // create reducers for setters
-            setters.forEach(_ => {
-                const reduxKey: string = instance.reduxKey()
-                const actionType: string = createStateChangeKey(reduxKey)
-                const defaultState = instance.defaultState
-    
-                const makeReducer = (_reduxKey: string) => {
-                    const prevReducer: (state: ModuleState, action: Action) => ModuleState =
-                        reducersToCombine[_reduxKey]
-    
-                    const reducer = (
-                        state: ModuleState = defaultState,
-                        action: Action,
-                    ): ModuleState => {
-                        if (action.type !== actionType) {
-                            return state
-                        }
-    
-                        // there was a previous reducer
-                        // evaluate it
-                        const previousReducerExisted: boolean = !!prevReducer
-                        if (previousReducerExisted) {
-                            const result = prevReducer(state, action)
-                            if (result === defaultState) {
-                                return state
-                            }
-                        }
-    
-                        const type = createStateChangeKey(moduleName)
-                        const newState: ModuleState = Object.keys(action)
-                            .filter(k => k !== "type")
-                            .reduce(
-                                (acc, k) => {
-                                    const val = action[k]
-                                    if (k === type) {
-                                        return val
-                                    }
-                                    
-                                    if (val === null || typeof val === "undefined") {
-                                        return Object.assign(acc, {
-                                            [k]: null,
-                                        })
-                                    }
 
-                                    return Object.assign(acc, {
-                                        [k]: val,
-                                    })
-                                },
-                                Object.assign({}, state),
-                            ) as ModuleState
-    
-                        return newState
-                    }
-    
-                    return reducer
+            // create reducer
+            const reduxKey: string = instance.reduxKey()
+            const defaultState = instance.defaultState
+            const actionType: string = createStateChangeKey(reduxKey)
+            reducersToCombine[reduxKey] =  (
+                state: ModuleState = defaultState,
+                action: Action,
+            ): ModuleState => {
+                if (action.type !== actionType) {
+                    return state
                 }
-    
-                reducersToCombine[reduxKey] = makeReducer(reduxKey)
-            })
-    
+
+                const type = createStateChangeKey(moduleName)
+                const newState: ModuleState = Object.keys(action)
+                    .filter(k => k !== "type")
+                    .reduce(
+                        (acc, k) => {
+                            const val = action[k]
+                            if (k === type) {
+                                return val
+                            }
+                            
+                            if (val === null || typeof val === "undefined") {
+                                return Object.assign(acc, {
+                                    [k]: null,
+                                })
+                            }
+
+                            return Object.assign(acc, {
+                                [k]: val,
+                            })
+                        },
+                        Object.assign({}, state),
+                    ) as ModuleState
+
+                return newState
+            }
+
             this.registeredModules[moduleName] = instance
         })
     }

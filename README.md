@@ -50,12 +50,11 @@ This simple module can be invoked via plain calls inside of your presentational 
 
 ```typescript
 sitka.handleColor("red")
-
 ```
 
 Invoking `handleColor` will instruct the sitka package manager to dispatch an action which will call the generator function defined in `ColorModule`. The generator function can then produce futher effects, such as the `setState` function which will mutate the redux state tree for the piece of state idenfied by the `moduleName` class attribute. You can alternatively specify a different key to manage by overriding the `reduxKey()`.
 
-# Integrating the Sikta Module Manager
+# Using the Sikta Module Manager
 
 The module manager can be used to integrate with an existing redux store, or to entire manage the store by itself. The simplest case is the latter, where the store shape and the API for mutating it is entirely managed by Sitka modules.
 
@@ -116,6 +115,9 @@ const store: Store = createStore(
     applyMiddleware(...combinedMiddleware),
 )
 
+// sitka needs a handle to the store's dispatch function
+sitka.setDispatch(store.dispatch)
+
 sagaMiddleware.run(sagaRoot)
 ```
 
@@ -146,4 +148,52 @@ console.log(store.getState())
 ```
 
 ### React web usage
-tbd
+When `createStore` or `createSitkaMeta` is called on a Sitka instance, the instance itself is automatically added to the
+redux store under the key `__sitka__` so it can be conveniently accessed. Redux connected components can access the instance
+via that key, and invoke any of the methods available to the modules. As before, this will automatically dispatch that action.
+
+In the entry point of your React app (usually `index.tsx` or `index.jsx`), create the Sitka-connected store, and pass it to
+the rest of your app using `react-redux` connect:
+```tsx
+const store: Store = createCoreAppStore()
+
+ReactDOM.render(
+    <Provider store={store}>
+        <App />
+    </Provider>,
+    document.getElementById("root") as HTMLElement,
+)
+```
+
+Inside of a connected Component, pull the Sitka instance out of the store, and expose it to click handlers: 
+```tsx
+interface ComponentProps {
+    readonly color: ColorState
+    readonly handleColor: (color: string) => void
+}
+class App extends React.Component<ComponentProps> {
+    constructor(props: ComponentProps) {
+        super(props)
+    }
+
+    public render(): JSX.Element {
+        return (
+            <div>
+                <span>Color {this.props.color}</span>
+                <button id="increment" onClick={() => this.props.handleColor("red")}>
+                    Update color
+                </button>
+            </div>
+        )
+    }
+}
+
+export default connect(
+    (state: AppState): ReduxState => ({
+        color: state.color,
+        handleColor: state.__sitka__.getModules().color.handleColor,
+    })
+    null,
+)(App)
+
+```

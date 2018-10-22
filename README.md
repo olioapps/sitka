@@ -1,16 +1,16 @@
 # Sitka Redux Module Manager
 
-This library allows you to construct strongly typed APIs for managing your redux store. You can use it to package up related behavior into Typescript classes, which can be injected into your Redux store for easy access throughout your application.
+This library allows you to construct strongly typed APIs for managing your Redux store. You can use it to package up related behavior into Typescript classes, which can be injected into your Redux store for easy access throughout your application.
 
 The Sitka Redux package manager can be used in many different contexts, including React apps, Electron apps, and more. A canonical use of this library can be found in the Sitka Monorepo (https://github.com/olioapps/sitka-monorepo).
 
-# Whats a Sitka Redux Module?
+## Whats a Sitka Redux Module?
 
-A Sitka Redux Module refers to the logical grouping of a region of redux store state and the operations which can change it. Mutators of state are typically reducers and sagas, which are triggered by action creators.
+A Sitka Redux Module refers to the logical grouping of a region of Redux store state and the operations which can change it. Mutators of state are typically reducers and sagas, which are triggered by action creators.
 
-A Sitka Redux makes it possible to define and manage a piece of the redux store conveniently, organizing all the responsibilities described above into a single Typescript class.
+A Sitka Redux makes it possible to define and manage a piece of the Redux store conveniently, organizing all the responsibilities described above into a single Typescript class.
 
-# Instantiating the module manager
+## Instantiating the module manager
 
 Create an instance of the module manager using its constructor:
 
@@ -30,14 +30,14 @@ sitka.register(
 )
 ```
 
-# Example Sitka Redux Module
+## Example Sitka Redux Module
 
 Sitka Redux Modules are plain Typescript classes which expose Redux Sagas as public methods. 
-Here is a simple example, a module which tracks the `color` state in your redux state.
+Here is a simple example, a module which tracks the `color` state in your Redux state.
 
 ```typescript
 import { AppModules } from "../../index"
-import { put } from "redux-saga/effects"
+import { put } from "Redux-saga/effects"
 import { SitkaModule } from "olio-sitka"
 
 export type ColorState = string | null
@@ -58,13 +58,13 @@ This simple module can be invoked via plain calls inside of your presentational 
 sitka.handleColor("red")
 ```
 
-Invoking `handleColor` will instruct the sitka package manager to dispatch an action which will call the generator function defined in `ColorModule`. The generator function can then produce futher effects, such as the `setState` function which will mutate the redux state tree for the piece of state idenfied by the `moduleName` class attribute. You can alternatively specify a different key to manage by overriding the `reduxKey()`.
+Invoking `handleColor` will instruct the sitka package manager to dispatch an action which will call the generator function defined in `ColorModule`. The generator function can then produce futher effects, such as the `setState` function which will mutate the Redux state tree for the piece of state idenfied by the `moduleName` class attribute. You can alternatively specify a different key to manage by overriding the `reduxKey()`.
 
-# Using the Sikta Module Manager
+## Using the Sikta Module Manager
 
-The module manager can be used to integrate with an existing redux store, or to entire manage the store by itself. The simplest case is the latter, where the store shape and the API for mutating it is entirely managed by Sitka modules.
+The module manager can be used to integrate with an existing Redux store, or to entire manage the store by itself. The simplest case is the latter, where the store shape and the API for mutating it is entirely managed by Sitka modules.
 
-## Creating a Sitka managed store
+### Creating a Sitka managed store
 
 ```typescript
 const sitka = new Sitka<AppModules>()
@@ -75,11 +75,11 @@ sitka.register([
 const store = sitka.createStore()
 ```
 
-This instance of the redux store can be injected into your application, for example using `react-redux`. Please see the section below for an example of how to use Sitka modules within a React application.
+This instance of the Redux store can be injected into your application, for example using `react-Redux`. Please see the section below for an example of how to use Sitka modules within a React application.
 
-## Adding Sitka to a redux store
+### Adding Sitka to a Redux store
 
-In the example below, we are using redux's `createStore` function to create a store. We provide for its arguments a merging of the reducers, sagas, and middleware returned from Sitka's `createSitkaMeta` function, with those you create normally. 
+In the example below, we are using Redux's `createStore` function to create a store. We provide for its arguments a merging of the reducers, sagas, and middleware returned from Sitka's `createSitkaMeta` function, with those you create normally. 
 
 ```typescript
 // ask sitka for store-relevant pieces based on registered modules
@@ -127,9 +127,9 @@ sitka.setDispatch(store.dispatch)
 sagaMiddleware.run(sagaRoot)
 ```
 
-The primary usecase for the above is to enhance a pre-exising redux store with sitka managed redux modules.
+The primary usecase for the above is to enhance a pre-exising Redux store with sitka managed Redux modules.
 
-# Using Sitka managed redux modules
+## Using Sitka managed Redux modules
 
 ### Basic usage
 After you create a Sitka managed or integrated store, you can begin to change its state by calling methods on the modules. For example:
@@ -155,11 +155,11 @@ console.log(store.getState())
 
 ### React web usage
 When `createStore` or `createSitkaMeta` is called on a Sitka instance, the instance itself is automatically added to the
-redux store under the key `__sitka__` so it can be conveniently accessed. Redux connected components can access the instance
+Redux store under the key `__sitka__` so it can be conveniently accessed. Redux connected components can access the instance
 via that key, and invoke any of the methods available to the modules. As before, this will automatically dispatch that action.
 
 In the entry point of your React app (usually `index.tsx` or `index.jsx`), create the Sitka-connected store, and pass it to
-the rest of your app using `react-redux` connect:
+the rest of your app using `react-Redux` connect:
 ```tsx
 const store: Store = createCoreAppStore()
 

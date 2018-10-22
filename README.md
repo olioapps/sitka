@@ -4,6 +4,12 @@ This library allows you to construct strongly typed APIs for managing your redux
 
 The Sitka Redux package manager can be used in many different contexts, including React apps, Electron apps, and more. A canonical use of this library can be found in the Sitka Monorepo (https://github.com/olioapps/sitka-monorepo).
 
+# Whats a Sitka Redux Module?
+
+A Sitka Redux Module refers to the logical grouping of a region of redux store state and the operations which can change it. Mutators of state are typically reducers and sagas, which are triggered by action creators.
+
+A Sitka Redux makes it possible to define and manage a piece of the redux store conveniently, organizing all the responsibilities described above into a single Typescript class.
+
 # Instantiating the module manager
 
 Create an instance of the module manager using its constructor:

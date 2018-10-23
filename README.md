@@ -8,7 +8,7 @@ The Sitka Redux package manager can be used in many different contexts, includin
 
 A Sitka Redux Module refers to the logical grouping of a region of Redux store state and the operations which can change it. Mutators of state are typically reducers and sagas, which are triggered by action creators.
 
-A Sitka Redux makes it possible to define and manage a piece of the Redux store conveniently, organizing all the responsibilities described above into a single Typescript class.
+Sitka makes it possible to define and manage a piece of the Redux store conveniently, organizing all the responsibilities described above into a single Typescript class.
 
 ## Instantiating the module manager
 

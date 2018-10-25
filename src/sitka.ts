@@ -14,7 +14,7 @@ import {
     SagaMiddleware,
 } from "redux-saga"
 import createSagaMiddleware from "redux-saga"
-import { all, apply, takeEvery, ForkEffect } from "redux-saga/effects"
+import { all, apply, takeEvery, ForkEffect, CallEffectFn } from "redux-saga/effects"
 
 export type SitkaModuleAction<T> = Partial<T> & { type: string } | Action
 
@@ -22,7 +22,14 @@ type ModuleState = {} | undefined | null
 
 const createStateChangeKey = (module: string) => `module_${module}_change_state`.toUpperCase()
 const createHandlerKey = (module: string, handler: string) => `module_${module}_${handler}`.toUpperCase()
-const handlerFunctionMap = new Map<Function, string>()
+
+interface GeneratorContext {
+    readonly handlerKey: string
+    readonly fn: CallEffectFn<any>
+    readonly context: {}
+}
+
+const handlerOriginalFunctionMap = new Map<Function, GeneratorContext>()
 
 export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
     public modules: MODULES
@@ -62,8 +69,9 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
                 direct: true,
             }
         } else {
+            const generatorContext: GeneratorContext = handlerOriginalFunctionMap.get(actionTarget)
             return {
-                name: handlerFunctionMap.get(actionTarget),
+                name: generatorContext.handlerKey,
                 handler,
                 direct: true,
             }
@@ -76,6 +84,11 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
 
     provideSubscriptions(): SagaMeta[] {
         return [] 
+    }
+
+    static *callAsGenerator(fn: Function, ...rest: any[]): {} {
+        const generatorContext: GeneratorContext = handlerOriginalFunctionMap.get(fn)
+        yield apply(generatorContext.context, generatorContext.fn, <any> rest)
     }
  }
 
@@ -185,6 +198,8 @@ export class Sitka<MODULES = {}> {
                 const handlerKey = createHandlerKey(moduleName, s)
 
                 function patched(): void {
+                    console.log("M", this.moduleName)
+                    debugger
                     const args = arguments
                     const action: SitkaAction = {
                         _args: args,
@@ -201,7 +216,11 @@ export class Sitka<MODULES = {}> {
                 })
                 // tslint:disable-next-line:no-any
                 instance[s] = patched
-                handlerFunctionMap.set(patched, handlerKey)
+                handlerOriginalFunctionMap.set(patched, {
+                    handlerKey,
+                    fn: original,
+                    context: instance,
+                })
             })
 
             if (instance.defaultState !== undefined) {
@@ -279,7 +298,7 @@ export class Sitka<MODULES = {}> {
                     const item: any = yield takeEvery(s.name, s.handler)
                     toYield.push(item)
                 } else {
-                    const generator = function*(action: any): {} {
+                    const generator = function*(action: SitkaAction): {} {
                         const instance: {} = registeredModules[action._moduleId]
                         yield apply(instance, s.handler, action._args)
                     }

@@ -47,7 +47,7 @@ var redux_saga_1 = __importDefault(require("redux-saga"));
 var effects_1 = require("redux-saga/effects");
 var createStateChangeKey = function (module) { return ("module_" + module + "_change_state").toUpperCase(); };
 var createHandlerKey = function (module, handler) { return ("module_" + module + "_" + handler).toUpperCase(); };
-var handlerFunctionMap = new Map();
+var handlerOriginalFunctionMap = new Map();
 var SitkaModule = /** @class */ (function () {
     function SitkaModule() {
     }
@@ -81,8 +81,9 @@ var SitkaModule = /** @class */ (function () {
             };
         }
         else {
+            var generatorContext = handlerOriginalFunctionMap.get(actionTarget);
             return {
-                name: handlerFunctionMap.get(actionTarget),
+                name: generatorContext.handlerKey,
                 handler: handler,
                 direct: true,
             };
@@ -93,6 +94,23 @@ var SitkaModule = /** @class */ (function () {
     };
     SitkaModule.prototype.provideSubscriptions = function () {
         return [];
+    };
+    SitkaModule.callAsGenerator = function (fn) {
+        var _i, generatorContext;
+        var rest = [];
+        for (_i = 1; _i < arguments.length; _i++) {
+            rest[_i - 1] = arguments[_i];
+        }
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    generatorContext = handlerOriginalFunctionMap.get(fn);
+                    return [4 /*yield*/, effects_1.apply(generatorContext.context, generatorContext.fn, rest)];
+                case 1:
+                    _a.sent();
+                    return [2 /*return*/];
+            }
+        });
     };
     return SitkaModule;
 }());
@@ -162,6 +180,8 @@ var Sitka = /** @class */ (function () {
                 var original = instance[s]; // tslint:disable:no-any
                 var handlerKey = createHandlerKey(moduleName, s);
                 function patched() {
+                    console.log("M", this.moduleName);
+                    debugger;
                     var args = arguments;
                     var action = {
                         _args: args,
@@ -176,7 +196,11 @@ var Sitka = /** @class */ (function () {
                 });
                 // tslint:disable-next-line:no-any
                 instance[s] = patched;
-                handlerFunctionMap.set(patched, handlerKey);
+                handlerOriginalFunctionMap.set(patched, {
+                    handlerKey: handlerKey,
+                    fn: original,
+                    context: instance,
+                });
             });
             if (instance.defaultState !== undefined) {
                 // create reducer

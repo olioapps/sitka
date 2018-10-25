@@ -13,6 +13,7 @@ export declare abstract class SitkaModule<MODULE_STATE extends ModuleState, MODU
     protected createSubscription(actionTarget: string | Function, handler: Function): SagaMeta;
     provideMiddleware(): Middleware[];
     provideSubscriptions(): SagaMeta[];
+    static callAsGenerator(fn: Function, ...rest: any[]): {};
 }
 export interface SagaMeta {
     readonly handler: any;

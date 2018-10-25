@@ -47,6 +47,7 @@ var redux_saga_1 = __importDefault(require("redux-saga"));
 var effects_1 = require("redux-saga/effects");
 var createStateChangeKey = function (module) { return ("module_" + module + "_change_state").toUpperCase(); };
 var createHandlerKey = function (module, handler) { return ("module_" + module + "_" + handler).toUpperCase(); };
+var handlerFunctionMap = new Map();
 var SitkaModule = /** @class */ (function () {
     function SitkaModule() {
     }
@@ -70,12 +71,22 @@ var SitkaModule = /** @class */ (function () {
     SitkaModule.prototype.setState = function (state) {
         return this.createAction(state);
     };
-    SitkaModule.prototype.createSubscription = function (actionType, handler) {
-        return {
-            name: actionType,
-            handler: handler,
-            direct: true,
-        };
+    // can be either the action type string, or the module function to watch
+    SitkaModule.prototype.createSubscription = function (actionTarget, handler) {
+        if (typeof actionTarget === "string") {
+            return {
+                name: actionTarget,
+                handler: handler,
+                direct: true,
+            };
+        }
+        else {
+            return {
+                name: handlerFunctionMap.get(actionTarget),
+                handler: handler,
+                direct: true,
+            };
+        }
     };
     SitkaModule.prototype.provideMiddleware = function () {
         return [];
@@ -142,21 +153,20 @@ var Sitka = /** @class */ (function () {
         instances.forEach(function (instance) {
             var methodNames = getInstanceMethodNames(instance, Object.prototype);
             var handlers = methodNames.filter(function (m) { return m.indexOf("handle") === 0; });
-            var subscribers = instance.provideSubscriptions();
             var moduleName = instance.moduleName;
             var _a = _this, middlewareToAdd = _a.middlewareToAdd, sagas = _a.sagas, reducersToCombine = _a.reducersToCombine, dispatch = _a.doDispatch;
             instance.modules = _this.getModules();
-            sagas.push.apply(sagas, subscribers);
             middlewareToAdd.push.apply(middlewareToAdd, instance.provideMiddleware());
             handlers.forEach(function (s) {
                 // tslint:disable:ban-types
                 var original = instance[s]; // tslint:disable:no-any
+                var handlerKey = createHandlerKey(moduleName, s);
                 function patched() {
                     var args = arguments;
                     var action = {
                         _args: args,
                         _moduleId: moduleName,
-                        type: createHandlerKey(moduleName, s),
+                        type: handlerKey,
                     };
                     dispatch(action);
                 }
@@ -166,37 +176,46 @@ var Sitka = /** @class */ (function () {
                 });
                 // tslint:disable-next-line:no-any
                 instance[s] = patched;
+                handlerFunctionMap.set(patched, handlerKey);
             });
-            // create reducer
-            var reduxKey = instance.reduxKey();
-            var defaultState = instance.defaultState;
-            var actionType = createStateChangeKey(reduxKey);
-            reducersToCombine[reduxKey] = function (state, action) {
-                if (state === void 0) { state = defaultState; }
-                if (action.type !== actionType) {
-                    return state;
-                }
-                var type = createStateChangeKey(moduleName);
-                var newState = Object.keys(action)
-                    .filter(function (k) { return k !== "type"; })
-                    .reduce(function (acc, k) {
-                    var _a, _b;
-                    var val = action[k];
-                    if (k === type) {
-                        return val;
+            if (instance.defaultState !== undefined) {
+                // create reducer
+                var reduxKey = instance.reduxKey();
+                var defaultState_1 = instance.defaultState;
+                var actionType_1 = createStateChangeKey(reduxKey);
+                reducersToCombine[reduxKey] = function (state, action) {
+                    if (state === void 0) { state = defaultState_1; }
+                    if (action.type !== actionType_1) {
+                        return state;
                     }
-                    if (val === null || typeof val === "undefined") {
-                        return Object.assign(acc, (_a = {},
-                            _a[k] = null,
-                            _a));
-                    }
-                    return Object.assign(acc, (_b = {},
-                        _b[k] = val,
-                        _b));
-                }, Object.assign({}, state));
-                return newState;
-            };
+                    var type = createStateChangeKey(moduleName);
+                    var newState = Object.keys(action)
+                        .filter(function (k) { return k !== "type"; })
+                        .reduce(function (acc, k) {
+                        var _a, _b;
+                        var val = action[k];
+                        if (k === type) {
+                            return val;
+                        }
+                        if (val === null || typeof val === "undefined") {
+                            return Object.assign(acc, (_a = {},
+                                _a[k] = null,
+                                _a));
+                        }
+                        return Object.assign(acc, (_b = {},
+                            _b[k] = val,
+                            _b));
+                    }, Object.assign({}, state));
+                    return newState;
+                };
+            }
             _this.registeredModules[moduleName] = instance;
+        });
+        // do subscribers after all has been registered
+        instances.forEach(function (instance) {
+            var sagas = _this.sagas;
+            var subscribers = instance.provideSubscriptions();
+            sagas.push.apply(sagas, subscribers);
         });
     };
     Sitka.prototype.getDefaultState = function () {
@@ -279,6 +298,9 @@ var Sitka = /** @class */ (function () {
         if (!!dispatch) {
             dispatch(action);
         }
+        else {
+            alert("no dispatch");
+        }
     };
     return Sitka;
 }());
@@ -294,6 +316,8 @@ exports.createAppStore = function (intialState, reducersToCombine, middleware, s
     var commonMiddleware = [sagaMiddleware, logger];
     var appReducer = reducersToCombine.reduce(function (acc, r) { return (__assign({}, acc, r)); }, {});
     var combinedMiddleware = commonMiddleware.concat(middleware);
+    // const createStoreWithMiddleware = applyMiddleware(...combinedMiddleware)(createStore)
+    // const store: Store = createStoreWithMiddleware(combineReducers(appReducer))
     var store = redux_1.createStore(redux_1.combineReducers(appReducer), intialState, redux_1.applyMiddleware.apply(void 0, combinedMiddleware));
     if (sagaRoot) {
         sagaMiddleware.run(sagaRoot);

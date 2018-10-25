@@ -14,7 +14,7 @@ import {
     SagaMiddleware,
 } from "redux-saga"
 import createSagaMiddleware from "redux-saga"
-import { all, apply, takeEvery } from "redux-saga/effects"
+import { all, apply, takeEvery, ForkEffect } from "redux-saga/effects"
 
 export type SitkaModuleAction<T> = Partial<T> & { type: string } | Action
 
@@ -22,6 +22,7 @@ type ModuleState = {} | undefined | null
 
 const createStateChangeKey = (module: string) => `module_${module}_change_state`.toUpperCase()
 const createHandlerKey = (module: string, handler: string) => `module_${module}_${handler}`.toUpperCase()
+const handlerFunctionMap = new Map<Function, string>()
 
 export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
     public modules: MODULES
@@ -33,7 +34,7 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
         return this.moduleName
     }
 
-    public abstract defaultState: MODULE_STATE
+    public abstract defaultState?: MODULE_STATE
 
     protected createAction(v: Partial<MODULE_STATE>): SitkaModuleAction<MODULE_STATE> {
         const type = createStateChangeKey(this.reduxKey())
@@ -52,11 +53,20 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
         return this.createAction(state)
     }
 
-    protected createSubscription(actionType: string, handler: Function): SagaMeta {
-        return {
-            name: actionType,
-            handler,
-            direct: true,
+    // can be either the action type string, or the module function to watch
+    protected createSubscription(actionTarget: string | Function, handler: Function): SagaMeta {
+        if (typeof actionTarget === "string") {
+            return {
+                name: actionTarget,
+                handler,
+                direct: true,
+            }
+        } else {
+            return {
+                name: handlerFunctionMap.get(actionTarget),
+                handler,
+                direct: true,
+            }
         }
     }
 
@@ -160,13 +170,11 @@ export class Sitka<MODULES = {}> {
                 Object.prototype,
             )
             const handlers = methodNames.filter(m => m.indexOf("handle") === 0)
-            const subscribers = instance.provideSubscriptions()
 
             const { moduleName } = instance
             const { middlewareToAdd, sagas, reducersToCombine, doDispatch: dispatch } = this
     
             instance.modules = this.getModules()
-            sagas.push(...subscribers)
 
             middlewareToAdd.push(...instance.provideMiddleware())
             
@@ -174,12 +182,14 @@ export class Sitka<MODULES = {}> {
                 // tslint:disable:ban-types
                 const original: Function = instance[s] // tslint:disable:no-any
     
+                const handlerKey = createHandlerKey(moduleName, s)
+
                 function patched(): void {
                     const args = arguments
                     const action: SitkaAction = {
                         _args: args,
                         _moduleId: moduleName,
-                        type: createHandlerKey(moduleName, s),
+                        type: handlerKey,
                     }
     
                     dispatch(action)
@@ -191,47 +201,58 @@ export class Sitka<MODULES = {}> {
                 })
                 // tslint:disable-next-line:no-any
                 instance[s] = patched
+                handlerFunctionMap.set(patched, handlerKey)
             })
 
-            // create reducer
-            const reduxKey: string = instance.reduxKey()
-            const defaultState = instance.defaultState
-            const actionType: string = createStateChangeKey(reduxKey)
-            reducersToCombine[reduxKey] =  (
-                state: ModuleState = defaultState,
-                action: Action,
-            ): ModuleState => {
-                if (action.type !== actionType) {
-                    return state
-                }
+            if (instance.defaultState !== undefined) {
+                // create reducer
+                const reduxKey: string = instance.reduxKey()
+                const defaultState = instance.defaultState
+                const actionType: string = createStateChangeKey(reduxKey)
 
-                const type = createStateChangeKey(moduleName)
-                const newState: ModuleState = Object.keys(action)
-                    .filter(k => k !== "type")
-                    .reduce(
-                        (acc, k) => {
-                            const val = action[k]
-                            if (k === type) {
-                                return val
-                            }
-                            
-                            if (val === null || typeof val === "undefined") {
+                reducersToCombine[reduxKey] = (
+                    state: ModuleState = defaultState,
+                    action: Action,
+                ): ModuleState => {
+                    if (action.type !== actionType) {
+                        return state
+                    }
+
+                    const type = createStateChangeKey(moduleName)
+                    const newState: ModuleState = Object.keys(action)
+                        .filter(k => k !== "type")
+                        .reduce(
+                            (acc, k) => {
+                                const val = action[k]
+                                if (k === type) {
+                                    return val
+                                }
+                                
+                                if (val === null || typeof val === "undefined") {
+                                    return Object.assign(acc, {
+                                        [k]: null,
+                                    })
+                                }
+
                                 return Object.assign(acc, {
-                                    [k]: null,
+                                    [k]: val,
                                 })
-                            }
+                            },
+                            Object.assign({}, state),
+                        ) as ModuleState
 
-                            return Object.assign(acc, {
-                                [k]: val,
-                            })
-                        },
-                        Object.assign({}, state),
-                    ) as ModuleState
-
-                return newState
+                    return newState
+                }
             }
 
             this.registeredModules[moduleName] = instance
+        })
+
+        // do subscribers after all has been registered
+        instances.forEach( instance => {
+            const { sagas } = this
+            const subscribers = instance.provideSubscriptions()
+            sagas.push(...subscribers)
         })
     }
 
@@ -250,7 +271,7 @@ export class Sitka<MODULES = {}> {
 
         function* root(): IterableIterator<{}> {
             /* tslint:disable */
-            const toYield: any[] = []
+            const toYield: ForkEffect[] = []
     
             for (let i = 0; i < sagas.length; i++) {
                 const s: SagaMeta = sagas[i]
@@ -277,6 +298,8 @@ export class Sitka<MODULES = {}> {
         const { dispatch } = this
         if (!!dispatch) {
             dispatch(action)
+        } else {
+            alert("no dispatch")
         }
     }
 }
@@ -297,6 +320,10 @@ export const createAppStore = (
     )
 
     const combinedMiddleware = [...commonMiddleware, ...middleware]
+
+    // const createStoreWithMiddleware = applyMiddleware(...combinedMiddleware)(createStore)
+
+    // const store: Store = createStoreWithMiddleware(combineReducers(appReducer))
 
     const store: Store = createStore(
         combineReducers(appReducer),

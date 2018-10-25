@@ -7,10 +7,10 @@ export declare abstract class SitkaModule<MODULE_STATE extends ModuleState, MODU
     modules: MODULES;
     abstract moduleName: string;
     reduxKey(): string;
-    abstract defaultState: MODULE_STATE;
+    abstract defaultState?: MODULE_STATE;
     protected createAction(v: Partial<MODULE_STATE>): SitkaModuleAction<MODULE_STATE>;
     protected setState(state: MODULE_STATE): Action;
-    protected createSubscription(actionType: string, handler: Function): SagaMeta;
+    protected createSubscription(actionTarget: string | Function, handler: Function): SagaMeta;
     provideMiddleware(): Middleware[];
     provideSubscriptions(): SagaMeta[];
 }

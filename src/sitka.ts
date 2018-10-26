@@ -14,7 +14,7 @@ import {
     SagaMiddleware,
 } from "redux-saga"
 import createSagaMiddleware from "redux-saga"
-import { all, apply, takeEvery, ForkEffect, CallEffectFn } from "redux-saga/effects"
+import { all, apply, takeEvery, fork, ForkEffect, CallEffectFn } from "redux-saga/effects"
 
 export type SitkaModuleAction<T> = Partial<T> & { type: string } | Action
 
@@ -86,6 +86,10 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
         return [] 
     }
 
+    provideForks(): CallEffectFn<any>[] {
+        return []
+    }
+
     static *callAsGenerator(fn: Function, ...rest: any[]): {} {
         const generatorContext: GeneratorContext = handlerOriginalFunctionMap.get(fn)
         return yield apply(generatorContext.context, generatorContext.fn, <any> rest)
@@ -119,6 +123,7 @@ export type AppStoreCreator = (sitaMeta: SitkaMeta) => Store
 export class Sitka<MODULES = {}> {
     // tslint:disable-next-line:no-any
     private sagas: SagaMeta[] = []
+    private forks: CallEffectFn<any>[] = []
     // tslint:disable-next-line:no-any
     private reducersToCombine: ReducersMapObject = {}
     private middlewareToAdd: Middleware[] = []
@@ -185,12 +190,17 @@ export class Sitka<MODULES = {}> {
             const handlers = methodNames.filter(m => m.indexOf("handle") === 0)
 
             const { moduleName } = instance
-            const { middlewareToAdd, sagas, reducersToCombine, doDispatch: dispatch } = this
+            const { middlewareToAdd, sagas, forks, reducersToCombine, doDispatch: dispatch } = this
     
             instance.modules = this.getModules()
 
             middlewareToAdd.push(...instance.provideMiddleware())
-            
+    
+            debugger
+            instance.provideForks().forEach( f => {
+                forks.push(f)
+            })
+
             handlers.forEach(s => {
                 // tslint:disable:ban-types
                 const original: Function = instance[s] // tslint:disable:no-any
@@ -284,12 +294,13 @@ export class Sitka<MODULES = {}> {
     }
 
     private createRoot(): (() => IterableIterator<{}>) {
-        const { sagas, registeredModules } = this
+        const { sagas, forks, registeredModules } = this
 
         function* root(): IterableIterator<{}> {
             /* tslint:disable */
             const toYield: ForkEffect[] = []
     
+            // generators
             for (let i = 0; i < sagas.length; i++) {
                 const s: SagaMeta = sagas[i]
                 if (s.direct) {
@@ -304,6 +315,15 @@ export class Sitka<MODULES = {}> {
                     toYield.push(item)
                 }
             }
+
+            // forks
+            for (let i = 0; i < forks.length; i++) {
+                const f = forks[i]
+                const item: any = fork(f)
+                debugger
+                toYield.push(item)
+            }
+
             /* tslint:enable */
             yield all(toYield)
         }

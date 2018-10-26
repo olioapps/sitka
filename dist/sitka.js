@@ -95,6 +95,9 @@ var SitkaModule = /** @class */ (function () {
     SitkaModule.prototype.provideSubscriptions = function () {
         return [];
     };
+    SitkaModule.prototype.provideForks = function () {
+        return [];
+    };
     SitkaModule.callAsGenerator = function (fn) {
         var _i, generatorContext;
         var rest = [];
@@ -125,6 +128,7 @@ var Sitka = /** @class */ (function () {
     function Sitka() {
         // tslint:disable-next-line:no-any
         this.sagas = [];
+        this.forks = [];
         // tslint:disable-next-line:no-any
         this.reducersToCombine = {};
         this.middlewareToAdd = [];
@@ -170,9 +174,13 @@ var Sitka = /** @class */ (function () {
             var methodNames = getInstanceMethodNames(instance, Object.prototype);
             var handlers = methodNames.filter(function (m) { return m.indexOf("handle") === 0; });
             var moduleName = instance.moduleName;
-            var _a = _this, middlewareToAdd = _a.middlewareToAdd, sagas = _a.sagas, reducersToCombine = _a.reducersToCombine, dispatch = _a.doDispatch;
+            var _a = _this, middlewareToAdd = _a.middlewareToAdd, sagas = _a.sagas, forks = _a.forks, reducersToCombine = _a.reducersToCombine, dispatch = _a.doDispatch;
             instance.modules = _this.getModules();
             middlewareToAdd.push.apply(middlewareToAdd, instance.provideMiddleware());
+            debugger;
+            instance.provideForks().forEach(function (f) {
+                forks.push(f);
+            });
             handlers.forEach(function (s) {
                 // tslint:disable:ban-types
                 var original = instance[s]; // tslint:disable:no-any
@@ -248,9 +256,9 @@ var Sitka = /** @class */ (function () {
         }, {});
     };
     Sitka.prototype.createRoot = function () {
-        var _a = this, sagas = _a.sagas, registeredModules = _a.registeredModules;
+        var _a = this, sagas = _a.sagas, forks = _a.forks, registeredModules = _a.registeredModules;
         function root() {
-            var toYield, _loop_1, i;
+            var toYield, _loop_1, i, i, f, item;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -301,9 +309,16 @@ var Sitka = /** @class */ (function () {
                     case 3:
                         i++;
                         return [3 /*break*/, 1];
-                    case 4: 
-                    /* tslint:enable */
-                    return [4 /*yield*/, effects_1.all(toYield)];
+                    case 4:
+                        // forks
+                        for (i = 0; i < forks.length; i++) {
+                            f = forks[i];
+                            item = effects_1.fork(f);
+                            debugger;
+                            toYield.push(item);
+                        }
+                        /* tslint:enable */
+                        return [4 /*yield*/, effects_1.all(toYield)];
                     case 5:
                         /* tslint:enable */
                         _a.sent();

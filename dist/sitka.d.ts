@@ -1,4 +1,5 @@
 import { Action, Dispatch, Middleware, ReducersMapObject, Store } from "redux";
+import { CallEffectFn } from "redux-saga/effects";
 export declare type SitkaModuleAction<T> = (Partial<T> & {
     type: string;
 }) | Action;
@@ -13,6 +14,7 @@ export declare abstract class SitkaModule<MODULE_STATE extends ModuleState, MODU
     protected createSubscription(actionTarget: string | Function, handler: Function): SagaMeta;
     provideMiddleware(): Middleware[];
     provideSubscriptions(): SagaMeta[];
+    provideForks(): CallEffectFn<any>[];
     static callAsGenerator(fn: Function, ...rest: any[]): {};
 }
 export interface SagaMeta {
@@ -29,6 +31,7 @@ export declare class SitkaMeta {
 export declare type AppStoreCreator = (sitaMeta: SitkaMeta) => Store;
 export declare class Sitka<MODULES = {}> {
     private sagas;
+    private forks;
     private reducersToCombine;
     private middlewareToAdd;
     protected registeredModules: MODULES;

@@ -196,9 +196,8 @@ export class Sitka<MODULES = {}> {
 
             middlewareToAdd.push(...instance.provideMiddleware())
     
-            debugger
             instance.provideForks().forEach( f => {
-                forks.push(f)
+                forks.push(f.bind(instance))
             })
 
             handlers.forEach(s => {

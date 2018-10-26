@@ -177,9 +177,8 @@ var Sitka = /** @class */ (function () {
             var _a = _this, middlewareToAdd = _a.middlewareToAdd, sagas = _a.sagas, forks = _a.forks, reducersToCombine = _a.reducersToCombine, dispatch = _a.doDispatch;
             instance.modules = _this.getModules();
             middlewareToAdd.push.apply(middlewareToAdd, instance.provideMiddleware());
-            debugger;
             instance.provideForks().forEach(function (f) {
-                forks.push(f);
+                forks.push(f.bind(instance));
             });
             handlers.forEach(function (s) {
                 // tslint:disable:ban-types

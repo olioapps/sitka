@@ -178,8 +178,6 @@ var Sitka = /** @class */ (function () {
                 var original = instance[s]; // tslint:disable:no-any
                 var handlerKey = createHandlerKey(moduleName, s);
                 function patched() {
-                    console.log("M", this.moduleName);
-                    debugger;
                     var args = arguments;
                     var action = {
                         _args: args,

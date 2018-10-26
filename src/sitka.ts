@@ -198,8 +198,6 @@ export class Sitka<MODULES = {}> {
                 const handlerKey = createHandlerKey(moduleName, s)
 
                 function patched(): void {
-                    console.log("M", this.moduleName)
-                    debugger
                     const args = arguments
                     const action: SitkaAction = {
                         _args: args,

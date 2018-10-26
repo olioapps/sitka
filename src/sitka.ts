@@ -88,7 +88,7 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
 
     static *callAsGenerator(fn: Function, ...rest: any[]): {} {
         const generatorContext: GeneratorContext = handlerOriginalFunctionMap.get(fn)
-        yield apply(generatorContext.context, generatorContext.fn, <any> rest)
+        return yield apply(generatorContext.context, generatorContext.fn, <any> rest)
     }
  }
 

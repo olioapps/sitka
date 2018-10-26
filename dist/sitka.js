@@ -106,9 +106,7 @@ var SitkaModule = /** @class */ (function () {
                 case 0:
                     generatorContext = handlerOriginalFunctionMap.get(fn);
                     return [4 /*yield*/, effects_1.apply(generatorContext.context, generatorContext.fn, rest)];
-                case 1:
-                    _a.sent();
-                    return [2 /*return*/];
+                case 1: return [2 /*return*/, _a.sent()];
             }
         });
     };

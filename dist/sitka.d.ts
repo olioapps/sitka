@@ -12,7 +12,7 @@ export declare abstract class SitkaModule<MODULE_STATE extends ModuleState, MODU
     protected createAction(v: Partial<MODULE_STATE>): SitkaModuleAction<MODULE_STATE>;
     protected setState(state: MODULE_STATE): Action;
     protected resetState(): Action;
-    protected createSubscription(actionTarget: string | Function, handler: Function): SagaMeta;
+    protected createSubscription(actionTarget: string | Function, handler: CallEffectFn<any>): SagaMeta;
     provideMiddleware(): Middleware[];
     provideSubscriptions(): SagaMeta[];
     provideForks(): CallEffectFn<any>[];

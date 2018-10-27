@@ -71,6 +71,9 @@ var SitkaModule = /** @class */ (function () {
     SitkaModule.prototype.setState = function (state) {
         return this.createAction(state);
     };
+    SitkaModule.prototype.resetState = function () {
+        return this.setState(this.defaultState);
+    };
     // can be either the action type string, or the module function to watch
     SitkaModule.prototype.createSubscription = function (actionTarget, handler) {
         if (typeof actionTarget === "string") {

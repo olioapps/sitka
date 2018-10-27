@@ -60,8 +60,12 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
         return this.createAction(state)
     }
 
+    protected resetState(): Action {
+        return this.setState(this.defaultState)
+    }
+
     // can be either the action type string, or the module function to watch
-    protected createSubscription(actionTarget: string | Function, handler: Function): SagaMeta {
+    protected createSubscription(actionTarget: string | Function, handler: CallEffectFn<any>): SagaMeta {
         if (typeof actionTarget === "string") {
             return {
                 name: actionTarget,

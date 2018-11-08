@@ -123,6 +123,10 @@ export class SitkaMeta {
 
 export type AppStoreCreator = (sitaMeta: SitkaMeta) => Store
 
+export interface SitkaOptions {
+    readonly log?: boolean
+}
+
 // tslint:disable-next-line:max-classes-per-file
 export class Sitka<MODULES = {}> {
     // tslint:disable-next-line:no-any
@@ -133,8 +137,10 @@ export class Sitka<MODULES = {}> {
     private middlewareToAdd: Middleware[] = []
     protected registeredModules: MODULES
     private dispatch?: Dispatch
+    private sitkaOptions: SitkaOptions
 
-    constructor() {
+    constructor(sitkaOptions?: SitkaOptions) {
+        this.sitkaOptions = sitkaOptions
         this.doDispatch = this.doDispatch.bind(this)
         this.createStore = this.createStore.bind(this)
         this.createRoot = this.createRoot.bind(this)
@@ -173,10 +179,13 @@ export class Sitka<MODULES = {}> {
             // use own appstore creator
             const meta = this.createSitkaMeta()
             const store = createAppStore(
-                meta.defaultState,
-                [meta.reducersToCombine],
-                meta.middleware,
-                meta.sagaRoot,
+                {
+                    initialState: meta.defaultState,
+                    reducersToCombine: [meta.reducersToCombine],
+                    middleware: meta.middleware,
+                    sagaRoot: meta.sagaRoot,
+                    log: this.sitkaOptions && this.sitkaOptions.log === true,
+                }
             )
             this.dispatch = store.dispatch
             return store
@@ -323,7 +332,6 @@ export class Sitka<MODULES = {}> {
             for (let i = 0; i < forks.length; i++) {
                 const f = forks[i]
                 const item: any = fork(f)
-                debugger
                 toYield.push(item)
             }
 
@@ -344,17 +352,31 @@ export class Sitka<MODULES = {}> {
     }
 }
 
+export interface StoreOptions {
+    readonly initialState?: {}
+    readonly reducersToCombine?: ReducersMapObject[]
+    readonly middleware?: Middleware[]
+    readonly sagaRoot?: () => IterableIterator<{}>
+    readonly log?: boolean
+}
+
 export const createAppStore = (
-    intialState: {} = {},
-    reducersToCombine: ReducersMapObject[] = [],
-    middleware: Middleware[] = [],
-    sagaRoot?: (() => IterableIterator<{}>)
+    options: StoreOptions,
 ): Store => {
+    const { 
+        initialState = {},
+        reducersToCombine = [],
+        middleware = [],
+        sagaRoot,
+        log = false,
+    } = options
+
     const logger: Middleware = createLogger({
         stateTransformer: (state: {}) => state,
     })
     const sagaMiddleware: SagaMiddleware<{}> = createSagaMiddleware()
-    const commonMiddleware: ReadonlyArray<Middleware> = [sagaMiddleware, logger]
+    const commonMiddleware: ReadonlyArray<Middleware> = log 
+        ? [sagaMiddleware, logger] : [sagaMiddleware]
     const appReducer = reducersToCombine.reduce( 
         (acc, r) => ({...acc, ...r}), {}
     )
@@ -367,12 +389,12 @@ export const createAppStore = (
 
     const store: Store = createStore(
         combineReducers(appReducer),
-        intialState as DeepPartial<{}>,
+        initialState as DeepPartial<{}>,
         applyMiddleware(...combinedMiddleware),
     )
 
     if (sagaRoot) {
-        sagaMiddleware.run(sagaRoot)
+        sagaMiddleware.run(<any> sagaRoot)
     }
 
     return store

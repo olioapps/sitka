@@ -30,6 +30,9 @@ export declare class SitkaMeta {
     readonly sagaRoot: (() => IterableIterator<{}>);
 }
 export declare type AppStoreCreator = (sitaMeta: SitkaMeta) => Store;
+export interface SitkaOptions {
+    readonly log?: boolean;
+}
 export declare class Sitka<MODULES = {}> {
     private sagas;
     private forks;
@@ -37,7 +40,8 @@ export declare class Sitka<MODULES = {}> {
     private middlewareToAdd;
     protected registeredModules: MODULES;
     private dispatch?;
-    constructor();
+    private sitkaOptions;
+    constructor(sitkaOptions?: SitkaOptions);
     setDispatch(dispatch: Dispatch): void;
     getModules(): MODULES;
     createSitkaMeta(): SitkaMeta;
@@ -47,6 +51,13 @@ export declare class Sitka<MODULES = {}> {
     private createRoot;
     private doDispatch;
 }
-export declare const createAppStore: (intialState?: {}, reducersToCombine?: ReducersMapObject<any, Action<any>>[], middleware?: Middleware<{}, any, Dispatch<import("redux").AnyAction>>[], sagaRoot?: () => IterableIterator<{}>) => Store<any, import("redux").AnyAction>;
+export interface StoreOptions {
+    readonly initialState?: {};
+    readonly reducersToCombine?: ReducersMapObject[];
+    readonly middleware?: Middleware[];
+    readonly sagaRoot?: () => IterableIterator<{}>;
+    readonly log?: boolean;
+}
+export declare const createAppStore: (options: StoreOptions) => Store<any, import("redux").AnyAction>;
 export {};
 //# sourceMappingURL=sitka.d.ts.map

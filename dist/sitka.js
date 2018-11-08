@@ -128,13 +128,14 @@ var SitkaMeta = /** @class */ (function () {
 exports.SitkaMeta = SitkaMeta;
 // tslint:disable-next-line:max-classes-per-file
 var Sitka = /** @class */ (function () {
-    function Sitka() {
+    function Sitka(sitkaOptions) {
         // tslint:disable-next-line:no-any
         this.sagas = [];
         this.forks = [];
         // tslint:disable-next-line:no-any
         this.reducersToCombine = {};
         this.middlewareToAdd = [];
+        this.sitkaOptions = sitkaOptions;
         this.doDispatch = this.doDispatch.bind(this);
         this.createStore = this.createStore.bind(this);
         this.createRoot = this.createRoot.bind(this);
@@ -166,7 +167,13 @@ var Sitka = /** @class */ (function () {
         else {
             // use own appstore creator
             var meta = this.createSitkaMeta();
-            var store = exports.createAppStore(meta.defaultState, [meta.reducersToCombine], meta.middleware, meta.sagaRoot);
+            var store = exports.createAppStore({
+                initialState: meta.defaultState,
+                reducersToCombine: [meta.reducersToCombine],
+                middleware: meta.middleware,
+                sagaRoot: meta.sagaRoot,
+                log: this.sitkaOptions && this.sitkaOptions.log === true,
+            });
             this.dispatch = store.dispatch;
             return store;
         }
@@ -316,7 +323,6 @@ var Sitka = /** @class */ (function () {
                         for (i = 0; i < forks.length; i++) {
                             f = forks[i];
                             item = effects_1.fork(f);
-                            debugger;
                             toYield.push(item);
                         }
                         /* tslint:enable */
@@ -342,20 +348,19 @@ var Sitka = /** @class */ (function () {
     return Sitka;
 }());
 exports.Sitka = Sitka;
-exports.createAppStore = function (intialState, reducersToCombine, middleware, sagaRoot) {
-    if (intialState === void 0) { intialState = {}; }
-    if (reducersToCombine === void 0) { reducersToCombine = []; }
-    if (middleware === void 0) { middleware = []; }
+exports.createAppStore = function (options) {
+    var _a = options.initialState, initialState = _a === void 0 ? {} : _a, _b = options.reducersToCombine, reducersToCombine = _b === void 0 ? [] : _b, _c = options.middleware, middleware = _c === void 0 ? [] : _c, sagaRoot = options.sagaRoot, _d = options.log, log = _d === void 0 ? false : _d;
     var logger = redux_logger_1.createLogger({
         stateTransformer: function (state) { return state; },
     });
     var sagaMiddleware = redux_saga_1.default();
-    var commonMiddleware = [sagaMiddleware, logger];
+    var commonMiddleware = log
+        ? [sagaMiddleware, logger] : [sagaMiddleware];
     var appReducer = reducersToCombine.reduce(function (acc, r) { return (__assign({}, acc, r)); }, {});
     var combinedMiddleware = commonMiddleware.concat(middleware);
     // const createStoreWithMiddleware = applyMiddleware(...combinedMiddleware)(createStore)
     // const store: Store = createStoreWithMiddleware(combineReducers(appReducer))
-    var store = redux_1.createStore(redux_1.combineReducers(appReducer), intialState, redux_1.applyMiddleware.apply(void 0, combinedMiddleware));
+    var store = redux_1.createStore(redux_1.combineReducers(appReducer), initialState, redux_1.applyMiddleware.apply(void 0, combinedMiddleware));
     if (sagaRoot) {
         sagaMiddleware.run(sagaRoot);
     }

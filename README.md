@@ -78,56 +78,7 @@ const store = sitka.createStore()
 This instance of the Redux store can be injected into your application, for example using `react-Redux`. Please see the section below for an example of how to use Sitka modules within a React application.
 
 ### Adding Sitka to a Redux store
-
-In the example below, we are using Redux's `createStore` function to create a store. We provide for its arguments a merging of the reducers, sagas, and middleware returned from Sitka's `createSitkaMeta` function, with those you create normally. 
-
-```typescript
-// ask sitka for store-relevant pieces based on registered modules
-const sitkaMeta = sitka.createSitkaMeta()
-
-const initialState = {
-    ...sitkaMeta.defaultState,
-    // initial state for non-sitka managed modules
-    { counter: 0 },
-}
-
-const reducersToCombine = [
-    ...sitkaMeta.reducersToCombine,
-    // reducers for non-sitka managed modules
-    counter: (s = initialState.counter, a: { type: "INC" } ): number => a.type === "INC" : s + 1 : s    
-]
-
-// non-sitka generator function
-function* incrementSaga(): IteratorIterable<{}> {
-    yield put(() => { type: "INC" })
-}
-
-const middleware = [
-    ...sitkaMeta.middleware,
-    // middleware for non-sitka managed modules
-    (store: MiddlewareAPI<Dispatch, {}>) => (next: Function) => (action: Action) => next(action)
-]
-
-function* sagaRoot(): IterableIterator<{}> {
-    yield all[ yield takeEvery("HANDLE_INC", incrementSaga) ]
-    yield call(sitkaMeta.sagaRoot)
-}
-
-const combinedMiddleware = [ createSagaMiddleware(), ...middleware ]
-
-const store: Store = createStore(
-    combineReducers(reducersToCombine.reduce((acc, r) => ({...acc, ...r}), {})),
-    initialState,
-    applyMiddleware(...combinedMiddleware),
-)
-
-// sitka needs a handle to the store's dispatch function
-sitka.setDispatch(store.dispatch)
-
-sagaMiddleware.run(sagaRoot)
-```
-
-The primary usecase for the above is to enhance a pre-exising Redux store with sitka managed Redux modules.
+See the wiki (https://github.com/olioapps/sitka/wiki/Adding-Sitka-to-a-Redux-store) for an example of how to integrate Sitka with an existing Redux storer.
 
 ## Using Sitka managed Redux modules
 

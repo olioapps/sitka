@@ -23,11 +23,9 @@ The library needs to know the type of your modules, hence providing the type par
 You can register you modules via a simple register method on the sitka instance:
 
 ```typescript
-sitka.register(
-    [
-        new ColorModule(),
-    ]
-)
+sitka.register([
+    new ColorModule(),
+])
 ```
 
 ## Example Sitka Redux Module

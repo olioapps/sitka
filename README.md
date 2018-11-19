@@ -2,7 +2,9 @@
 
 This library allows you to construct strongly typed APIs for managing your Redux store. You can use it to package up related behavior into Typescript classes, which can be injected into your Redux store for easy access throughout your application.
 
-The Sitka Redux package manager can be used in many different contexts, including React apps, Electron apps, and more. A canonical use of this library can be found in the Sitka Monorepo (https://github.com/olioapps/sitka-monorepo).
+The Sitka Redux package manager can be used in many different contexts, including React apps, Electron apps, and more. A canonical use of this library can be found in https://github.com/frankmeza/sitka-counter-ts, a simple counter app illustrating how Sitka can be used in a React Web app.
+
+The Sitka Monorepo (https://github.com/olioapps/sitka-monorepo) also illustrates how you can use Sitka inside larger Redux based apps.
 
 ## Whats a Sitka Redux Module?
 

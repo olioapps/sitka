@@ -105,4 +105,4 @@ console.log(store.getState())
 ```
 
 ### React web usage
-Using Sitka modules inside React applications is easy! Check out https://github.com/olioapps/sitka/wiki/React-web-usage for an example.
+Using Sitka modules inside React applications is easy! Check out https://github.com/olioapps/sitka/wiki/React-web-usage for an example. You can also head over to https://github.com/frankmeza/sitka-counter-ts for an example of a simple repo using Sitka modules.

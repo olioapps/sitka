@@ -60,6 +60,8 @@ sitka.handleColor("red")
 
 Invoking `handleColor` will instruct the sitka package manager to dispatch an action which will call the generator function defined in `ColorModule`. The generator function can then produce futher effects, such as the `setState` function which will mutate the Redux state tree for the piece of state idenfied by the `moduleName` class attribute. You can alternatively specify a different key to manage by overriding the `reduxKey()`.
 
+Any Sitka module generator function whose name is prefixed with `handle` will be wrapped in an action and can be invoked directly from client code such as React components.
+
 ## Using the Sikta Module Manager
 
 The module manager can be used to integrate with an existing Redux store, or to entire manage the store by itself. The simplest case is the latter, where the store shape and the API for mutating it is entirely managed by Sitka modules.

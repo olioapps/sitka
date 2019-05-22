@@ -8,6 +8,7 @@ import {
     Middleware,
     ReducersMapObject, 
     Store,
+    StoreEnhancer,
 } from "redux"
 import { createLogger } from "redux-logger"
 import {
@@ -355,6 +356,7 @@ export class Sitka<MODULES = {}> {
 export interface StoreOptions {
     readonly initialState?: {}
     readonly reducersToCombine?: ReducersMapObject[]
+    readonly storeEnhancer?: StoreEnhancer,
     readonly middleware?: Middleware[]
     readonly sagaRoot?: () => IterableIterator<{}>
     readonly log?: boolean
@@ -369,6 +371,7 @@ export const createAppStore = (
         middleware = [],
         sagaRoot,
         log = false,
+        storeEnhancer,
     } = options
 
     const logger: Middleware = createLogger({
@@ -383,14 +386,10 @@ export const createAppStore = (
 
     const combinedMiddleware = [...commonMiddleware, ...middleware]
 
-    // const createStoreWithMiddleware = applyMiddleware(...combinedMiddleware)(createStore)
-
-    // const store: Store = createStoreWithMiddleware(combineReducers(appReducer))
-
     const store: Store = createStore(
         combineReducers(appReducer),
         initialState as DeepPartial<{}>,
-        applyMiddleware(...combinedMiddleware),
+        storeEnhancer ? storeEnhancer : applyMiddleware(...combinedMiddleware),
     )
 
     if (sagaRoot) {

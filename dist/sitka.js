@@ -349,7 +349,7 @@ var Sitka = /** @class */ (function () {
 }());
 exports.Sitka = Sitka;
 exports.createAppStore = function (options) {
-    var _a = options.initialState, initialState = _a === void 0 ? {} : _a, _b = options.reducersToCombine, reducersToCombine = _b === void 0 ? [] : _b, _c = options.middleware, middleware = _c === void 0 ? [] : _c, sagaRoot = options.sagaRoot, _d = options.log, log = _d === void 0 ? false : _d;
+    var _a = options.initialState, initialState = _a === void 0 ? {} : _a, _b = options.reducersToCombine, reducersToCombine = _b === void 0 ? [] : _b, _c = options.middleware, middleware = _c === void 0 ? [] : _c, sagaRoot = options.sagaRoot, _d = options.log, log = _d === void 0 ? false : _d, storeEnhancer = options.storeEnhancer;
     var logger = redux_logger_1.createLogger({
         stateTransformer: function (state) { return state; },
     });
@@ -358,9 +358,7 @@ exports.createAppStore = function (options) {
         ? [sagaMiddleware, logger] : [sagaMiddleware];
     var appReducer = reducersToCombine.reduce(function (acc, r) { return (__assign({}, acc, r)); }, {});
     var combinedMiddleware = commonMiddleware.concat(middleware);
-    // const createStoreWithMiddleware = applyMiddleware(...combinedMiddleware)(createStore)
-    // const store: Store = createStoreWithMiddleware(combineReducers(appReducer))
-    var store = redux_1.createStore(redux_1.combineReducers(appReducer), initialState, redux_1.applyMiddleware.apply(void 0, combinedMiddleware));
+    var store = redux_1.createStore(redux_1.combineReducers(appReducer), initialState, storeEnhancer ? storeEnhancer : redux_1.applyMiddleware.apply(void 0, combinedMiddleware));
     if (sagaRoot) {
         sagaMiddleware.run(sagaRoot);
     }

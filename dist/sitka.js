@@ -349,18 +349,18 @@ var Sitka = /** @class */ (function () {
 }());
 exports.Sitka = Sitka;
 exports.createAppStore = function (options) {
-    var _a = options.initialState, initialState = _a === void 0 ? {} : _a, _b = options.reducersToCombine, reducersToCombine = _b === void 0 ? [] : _b, _c = options.middleware, middleware = _c === void 0 ? [] : _c, sagaRoot = options.sagaRoot, sagaMiddleWare = options.sagaMiddleWare, _d = options.log, log = _d === void 0 ? false : _d, storeEnhancer = options.storeEnhancer;
+    var _a = options.initialState, initialState = _a === void 0 ? {} : _a, _b = options.reducersToCombine, reducersToCombine = _b === void 0 ? [] : _b, _c = options.middleware, middleware = _c === void 0 ? [] : _c, sagaRoot = options.sagaRoot, _d = options.log, log = _d === void 0 ? false : _d, _e = options.storeEnhancers, storeEnhancers = _e === void 0 ? [] : _e;
     var logger = redux_logger_1.createLogger({
         stateTransformer: function (state) { return state; },
     });
-    var sagaMiddlewareToUse = sagaMiddleWare || redux_saga_1.default();
+    var sagaMiddleware = redux_saga_1.default();
     var commonMiddleware = log
-        ? [sagaMiddlewareToUse, logger] : [sagaMiddlewareToUse];
+        ? [sagaMiddleware, logger] : [sagaMiddleware];
     var appReducer = reducersToCombine.reduce(function (acc, r) { return (__assign({}, acc, r)); }, {});
     var combinedMiddleware = commonMiddleware.concat(middleware);
-    var store = redux_1.createStore(redux_1.combineReducers(appReducer), initialState, storeEnhancer ? storeEnhancer : redux_1.applyMiddleware.apply(void 0, combinedMiddleware));
+    var store = redux_1.createStore(redux_1.combineReducers(appReducer), initialState, redux_1.compose.apply(void 0, storeEnhancers.concat([redux_1.applyMiddleware.apply(void 0, combinedMiddleware)])));
     if (sagaRoot) {
-        sagaMiddlewareToUse.run(sagaRoot);
+        sagaMiddleware.run(sagaRoot);
     }
     return store;
 };

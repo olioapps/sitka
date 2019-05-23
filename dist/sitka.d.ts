@@ -1,5 +1,4 @@
 import { Action, Dispatch, Middleware, ReducersMapObject, Store, StoreEnhancer } from "redux";
-import { SagaMiddleware } from "redux-saga";
 import { CallEffectFn } from "redux-saga/effects";
 export declare type SitkaModuleAction<T> = (Partial<T> & {
     type: string;
@@ -55,10 +54,9 @@ export declare class Sitka<MODULES = {}> {
 export interface StoreOptions {
     readonly initialState?: {};
     readonly reducersToCombine?: ReducersMapObject[];
-    readonly storeEnhancer?: StoreEnhancer;
+    readonly storeEnhancers?: StoreEnhancer[];
     readonly middleware?: Middleware[];
     readonly sagaRoot?: () => IterableIterator<{}>;
-    readonly sagaMiddleWare?: SagaMiddleware<{}>;
     readonly log?: boolean;
 }
 export declare const createAppStore: (options: StoreOptions) => Store<any, import("redux").AnyAction>;

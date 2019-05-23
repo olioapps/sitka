@@ -9,6 +9,7 @@ import {
     ReducersMapObject, 
     Store,
     StoreEnhancer,
+    compose,
 } from "redux"
 import { createLogger } from "redux-logger"
 import {
@@ -356,10 +357,9 @@ export class Sitka<MODULES = {}> {
 export interface StoreOptions {
     readonly initialState?: {}
     readonly reducersToCombine?: ReducersMapObject[]
-    readonly storeEnhancer?: StoreEnhancer,
+    readonly storeEnhancers?: StoreEnhancer[],
     readonly middleware?: Middleware[]
     readonly sagaRoot?: () => IterableIterator<{}>
-    readonly sagaMiddleWare?: SagaMiddleware<{}>
     readonly log?: boolean
 }
 
@@ -371,17 +371,16 @@ export const createAppStore = (
         reducersToCombine = [],
         middleware = [],
         sagaRoot,
-        sagaMiddleWare,
         log = false,
-        storeEnhancer,
+        storeEnhancers = [],
     } = options
 
     const logger: Middleware = createLogger({
         stateTransformer: (state: {}) => state,
     })
-    const sagaMiddlewareToUse: SagaMiddleware<{}> = sagaMiddleWare || createSagaMiddleware()
+    const sagaMiddleware: SagaMiddleware<{}> = createSagaMiddleware()
     const commonMiddleware: ReadonlyArray<Middleware> = log 
-        ? [sagaMiddlewareToUse, logger] : [sagaMiddlewareToUse]
+        ? [sagaMiddleware, logger] : [sagaMiddleware]
     const appReducer = reducersToCombine.reduce( 
         (acc, r) => ({...acc, ...r}), {}
     )
@@ -391,11 +390,11 @@ export const createAppStore = (
     const store: Store = createStore(
         combineReducers(appReducer),
         initialState as DeepPartial<{}>,
-        storeEnhancer ? storeEnhancer : applyMiddleware(...combinedMiddleware),
+        compose(...storeEnhancers, applyMiddleware(...combinedMiddleware)),
     )
 
     if (sagaRoot) {
-        sagaMiddlewareToUse.run(<any> sagaRoot)
+        sagaMiddleware.run(<any> sagaRoot)
     }
 
     return store

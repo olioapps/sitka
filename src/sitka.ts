@@ -359,6 +359,7 @@ export interface StoreOptions {
     readonly storeEnhancer?: StoreEnhancer,
     readonly middleware?: Middleware[]
     readonly sagaRoot?: () => IterableIterator<{}>
+    readonly sagaMiddleWare?: SagaMiddleware<{}>
     readonly log?: boolean
 }
 
@@ -370,6 +371,7 @@ export const createAppStore = (
         reducersToCombine = [],
         middleware = [],
         sagaRoot,
+        sagaMiddleWare,
         log = false,
         storeEnhancer,
     } = options
@@ -377,9 +379,9 @@ export const createAppStore = (
     const logger: Middleware = createLogger({
         stateTransformer: (state: {}) => state,
     })
-    const sagaMiddleware: SagaMiddleware<{}> = createSagaMiddleware()
+    const sagaMiddlewareToUse: SagaMiddleware<{}> = sagaMiddleWare || createSagaMiddleware()
     const commonMiddleware: ReadonlyArray<Middleware> = log 
-        ? [sagaMiddleware, logger] : [sagaMiddleware]
+        ? [sagaMiddlewareToUse, logger] : [sagaMiddlewareToUse]
     const appReducer = reducersToCombine.reduce( 
         (acc, r) => ({...acc, ...r}), {}
     )
@@ -393,7 +395,7 @@ export const createAppStore = (
     )
 
     if (sagaRoot) {
-        sagaMiddleware.run(<any> sagaRoot)
+        sagaMiddlewareToUse.run(<any> sagaRoot)
     }
 
     return store

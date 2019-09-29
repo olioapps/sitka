@@ -148,13 +148,23 @@ var Sitka = /** @class */ (function () {
         return this.registeredModules;
     };
     Sitka.prototype.createSitkaMeta = function () {
+        // by default, we include sitka object in the meta
+        var includeSitka = 
+        // if no options
+        !this.sitkaOptions
+            // if options were provided, but sitkaInStore is not defined
+            || this.sitkaOptions.sitkaInState === undefined
+            // if sitkaInStore is defined, and its not explicitly set to don't include
+            || this.sitkaOptions.sitkaInState !== false;
         return {
-            defaultState: __assign({}, this.getDefaultState(), { __sitka__: this }),
+            defaultState: includeSitka
+                ? __assign({}, this.getDefaultState(), { __sitka__: this }) : __assign({}, this.getDefaultState()),
             middleware: this.middlewareToAdd,
-            reducersToCombine: __assign({}, this.reducersToCombine, { __sitka__: function (state) {
-                    if (state === void 0) { state = null; }
-                    return state;
-                } }),
+            reducersToCombine: includeSitka
+                ? __assign({}, this.reducersToCombine, { __sitka__: function (state) {
+                        if (state === void 0) { state = null; }
+                        return state;
+                    } }) : __assign({}, this.reducersToCombine),
             sagaRoot: this.createRoot(),
         };
     };

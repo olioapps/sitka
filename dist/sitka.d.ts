@@ -32,6 +32,7 @@ export declare class SitkaMeta {
 export declare type AppStoreCreator = (sitaMeta: SitkaMeta) => Store;
 export interface SitkaOptions {
     readonly log?: boolean;
+    readonly sitkaInState?: boolean;
 }
 export declare class Sitka<MODULES = {}> {
     private sagas;

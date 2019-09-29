@@ -127,6 +127,7 @@ export type AppStoreCreator = (sitaMeta: SitkaMeta) => Store
 
 export interface SitkaOptions {
     readonly log?: boolean
+    readonly sitkaInState?: boolean
 }
 
 // tslint:disable-next-line:max-classes-per-file
@@ -158,16 +159,32 @@ export class Sitka<MODULES = {}> {
     }
 
     public createSitkaMeta(): SitkaMeta {
+        // by default, we include sitka object in the meta
+        const includeSitka = 
+            // if no options
+            !this.sitkaOptions 
+            // if options were provided, but sitkaInStore is not defined
+            || this.sitkaOptions.sitkaInState === undefined
+            // if sitkaInStore is defined, and its not explicitly set to don't include
+            || this.sitkaOptions.sitkaInState !== false
+
         return {
-            defaultState: {
-                ...this.getDefaultState(),
-                __sitka__: this,
-            },
+            defaultState: includeSitka 
+                ? {
+                    ...this.getDefaultState(),
+                    __sitka__: this,
+                } 
+                : {
+                    ...this.getDefaultState(),
+                },
             middleware: this.middlewareToAdd,
-            reducersToCombine: {
-                ...this.reducersToCombine,
-                __sitka__: (state: this | null = null): this | null => state,
-            },
+            reducersToCombine: includeSitka 
+                ? {
+                    ...this.reducersToCombine,
+                    __sitka__: (state: this | null = null): this | null => state,
+                }: {
+                    ...this.reducersToCombine,
+                },
             sagaRoot: this.createRoot(),
         }
     }

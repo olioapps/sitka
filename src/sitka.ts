@@ -102,6 +102,11 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
     }
  }
 
+ export interface SitkaSagaMiddlewareProvider {
+    middleware: SagaMiddleware<{}>
+    activate: () => void
+}
+
 export interface SagaMeta {
     // tslint:disable-next-line:no-any
     readonly handler: any
@@ -121,6 +126,7 @@ export class SitkaMeta {
     public readonly middleware: Middleware[]
     public readonly reducersToCombine: ReducersMapObject
     public readonly sagaRoot: (() => IterableIterator<{}>)
+    public readonly sagaProvider: () => SitkaSagaMiddlewareProvider
 }
 
 export type AppStoreCreator = (sitaMeta: SitkaMeta) => Store
@@ -168,6 +174,8 @@ export class Sitka<MODULES = {}> {
             // if sitkaInStore is defined, and its not explicitly set to don't include
             || this.sitkaOptions.sitkaInState !== false
 
+        const sagaRoot = this.createRoot()
+
         return {
             defaultState: includeSitka 
                 ? {
@@ -185,7 +193,17 @@ export class Sitka<MODULES = {}> {
                 }: {
                     ...this.reducersToCombine,
                 },
-            sagaRoot: this.createRoot(),
+            sagaRoot,
+            sagaProvider: (): SitkaSagaMiddlewareProvider => {
+                const middleware = createSagaMiddleware<{}>()
+        
+                return {
+                    middleware,
+                    activate: () => {
+                        middleware.run(sagaRoot)
+                    }
+                }
+            },
         }
     }
 

@@ -156,6 +156,7 @@ var Sitka = /** @class */ (function () {
             || this.sitkaOptions.sitkaInState === undefined
             // if sitkaInStore is defined, and its not explicitly set to don't include
             || this.sitkaOptions.sitkaInState !== false;
+        var sagaRoot = this.createRoot();
         return {
             defaultState: includeSitka
                 ? __assign({}, this.getDefaultState(), { __sitka__: this }) : __assign({}, this.getDefaultState()),
@@ -165,7 +166,16 @@ var Sitka = /** @class */ (function () {
                         if (state === void 0) { state = null; }
                         return state;
                     } }) : __assign({}, this.reducersToCombine),
-            sagaRoot: this.createRoot(),
+            sagaRoot: sagaRoot,
+            sagaProvider: function () {
+                var middleware = redux_saga_1.default();
+                return {
+                    middleware: middleware,
+                    activate: function () {
+                        middleware.run(sagaRoot);
+                    }
+                };
+            },
         };
     };
     Sitka.prototype.createStore = function (appstoreCreator) {

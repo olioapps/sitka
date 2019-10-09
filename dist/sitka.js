@@ -55,7 +55,7 @@ var SitkaModule = /** @class */ (function () {
     SitkaModule.prototype.reduxKey = function () {
         return this.moduleName;
     };
-    SitkaModule.prototype.createAction = function (v) {
+    SitkaModule.prototype.createAction = function (v, usePayload) {
         var _a, _b;
         var type = createStateChangeKey(this.reduxKey());
         if (!v) {
@@ -65,11 +65,17 @@ var SitkaModule = /** @class */ (function () {
             return _b = { type: type }, _b[type] = v, _b;
         }
         else {
+            if (usePayload) {
+                return {
+                    type: type,
+                    payload: v,
+                };
+            }
             return Object.assign({ type: type }, v);
         }
     };
-    SitkaModule.prototype.setState = function (state) {
-        return this.createAction(state);
+    SitkaModule.prototype.setState = function (state, replace) {
+        return this.createAction(state, replace);
     };
     SitkaModule.prototype.resetState = function () {
         return this.setState(this.defaultState);
@@ -246,6 +252,10 @@ var Sitka = /** @class */ (function () {
                         return state;
                     }
                     var type = createStateChangeKey(moduleName);
+                    var payload = action.payload;
+                    if (!!payload) {
+                        return payload;
+                    }
                     var newState = Object.keys(action)
                         .filter(function (k) { return k !== "type"; })
                         .reduce(function (acc, k) {

@@ -1,7 +1,7 @@
 {
   "name": "olio-sitka",
   "autho": "aron@olioapps.com",
-  "version": "1.0.33",
+  "version": "1.0.34",
   "license": "MIT",
   "files": [
     "dist/**/*"

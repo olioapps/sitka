@@ -18,7 +18,10 @@ import {
 import createSagaMiddleware from "redux-saga"
 import { all, apply, takeEvery, fork, ForkEffect, CallEffectFn } from "redux-saga/effects"
 
-export type SitkaModuleAction<T> = Partial<T> & { type: string } | Action
+interface PayloadAction extends Action {
+    readonly payload?: {}
+}
+export type SitkaModuleAction<T> = Partial<T> & { type: string, payload?: {} } | Action
 
 type ModuleState = {} | undefined | null
 
@@ -45,7 +48,7 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
 
     public abstract defaultState?: MODULE_STATE
 
-    protected createAction(v: Partial<MODULE_STATE>): SitkaModuleAction<MODULE_STATE> {
+    protected createAction(v: Partial<MODULE_STATE>, usePayload?: boolean): SitkaModuleAction<MODULE_STATE> {
         const type = createStateChangeKey(this.reduxKey())
         if (!v) {
             return { type, [type]: null }
@@ -54,12 +57,18 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
         if (typeof v !== "object") {
             return { type, [type]: v }
         } else {
+            if (usePayload) {
+                return {
+                    type,
+                    payload: v,
+                }
+            }
             return Object.assign({ type }, v)
         }
     }
 
-    protected setState(state: MODULE_STATE): Action {
-        return this.createAction(state)
+    protected setState(state: MODULE_STATE, replace?: boolean): Action {
+        return this.createAction(state, replace)
     }
 
     protected resetState(): Action {
@@ -288,13 +297,19 @@ export class Sitka<MODULES = {}> {
 
                 reducersToCombine[reduxKey] = (
                     state: ModuleState = defaultState,
-                    action: Action,
+                    action: PayloadAction,
                 ): ModuleState => {
                     if (action.type !== actionType) {
                         return state
                     }
 
                     const type = createStateChangeKey(moduleName)
+                    const payload = action.payload
+
+                    if (!!payload) {
+                        return payload
+                    }
+
                     const newState: ModuleState = Object.keys(action)
                         .filter(k => k !== "type")
                         .reduce(

@@ -3,6 +3,7 @@ import { SagaMiddleware } from "redux-saga";
 import { CallEffectFn } from "redux-saga/effects";
 export declare type SitkaModuleAction<T> = (Partial<T> & {
     type: string;
+    payload?: {};
 }) | Action;
 declare type ModuleState = {} | undefined | null;
 export declare abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
@@ -10,8 +11,8 @@ export declare abstract class SitkaModule<MODULE_STATE extends ModuleState, MODU
     abstract moduleName: string;
     reduxKey(): string;
     abstract defaultState?: MODULE_STATE;
-    protected createAction(v: Partial<MODULE_STATE>): SitkaModuleAction<MODULE_STATE>;
-    protected setState(state: MODULE_STATE): Action;
+    protected createAction(v: Partial<MODULE_STATE>, usePayload?: boolean): SitkaModuleAction<MODULE_STATE>;
+    protected setState(state: MODULE_STATE, replace?: boolean): Action;
     protected resetState(): Action;
     protected createSubscription(actionTarget: string | Function, handler: CallEffectFn<any>): SagaMeta;
     provideMiddleware(): Middleware[];

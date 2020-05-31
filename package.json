@@ -25,7 +25,7 @@
     "redux": "^4.0.0",
     "redux-logger": "^3.0.6",
     "redux-saga": "^0.15.4",
-    "semantic-release": "^15.13.24",
+    "semantic-release": "17.0.8",
     "ts-jest": "^23.1.4",
     "typescript": "^3.0.3"
   }

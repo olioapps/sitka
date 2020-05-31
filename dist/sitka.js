@@ -37,10 +37,18 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createAppStore = exports.Sitka = exports.SitkaMeta = exports.SitkaModule = void 0;
 var redux_1 = require("redux");
 var redux_logger_1 = require("redux-logger");
 var redux_saga_1 = __importDefault(require("redux-saga"));
@@ -169,10 +177,10 @@ var Sitka = /** @class */ (function () {
         var sagaRoot = this.createRoot();
         return {
             defaultState: includeSitka
-                ? __assign({}, this.getDefaultState(), { __sitka__: this }) : __assign({}, this.getDefaultState()),
-            middleware: includeLogging ? this.middlewareToAdd.concat([logger]) : this.middlewareToAdd,
+                ? __assign(__assign({}, this.getDefaultState()), { __sitka__: this }) : __assign({}, this.getDefaultState()),
+            middleware: includeLogging ? __spreadArrays(this.middlewareToAdd, [logger]) : this.middlewareToAdd,
             reducersToCombine: includeSitka
-                ? __assign({}, this.reducersToCombine, { __sitka__: function (state) {
+                ? __assign(__assign({}, this.reducersToCombine), { __sitka__: function (state) {
                         if (state === void 0) { state = null; }
                         return state;
                     } }) : __assign({}, this.reducersToCombine),
@@ -295,7 +303,7 @@ var Sitka = /** @class */ (function () {
             .map(function (k) { return modules[k]; })
             .reduce(function (acc, m) {
             var _a;
-            return (__assign({}, acc, (_a = {}, _a[m.moduleName] = m.defaultState, _a)));
+            return (__assign(__assign({}, acc), (_a = {}, _a[m.moduleName] = m.defaultState, _a)));
         }, {});
     };
     Sitka.prototype.createRoot = function () {
@@ -390,9 +398,9 @@ exports.createAppStore = function (options) {
     var sagaMiddleware = redux_saga_1.default();
     var commonMiddleware = log
         ? [sagaMiddleware, logger] : [sagaMiddleware];
-    var appReducer = reducersToCombine.reduce(function (acc, r) { return (__assign({}, acc, r)); }, {});
-    var combinedMiddleware = commonMiddleware.concat(middleware);
-    var store = redux_1.createStore(redux_1.combineReducers(appReducer), initialState, redux_1.compose.apply(void 0, storeEnhancers.concat([redux_1.applyMiddleware.apply(void 0, combinedMiddleware)])));
+    var appReducer = reducersToCombine.reduce(function (acc, r) { return (__assign(__assign({}, acc), r)); }, {});
+    var combinedMiddleware = __spreadArrays(commonMiddleware, middleware);
+    var store = redux_1.createStore(redux_1.combineReducers(appReducer), initialState, redux_1.compose.apply(void 0, __spreadArrays(storeEnhancers, [redux_1.applyMiddleware.apply(void 0, combinedMiddleware)])));
     if (sagaRoot) {
         sagaMiddleware.run(sagaRoot);
     }

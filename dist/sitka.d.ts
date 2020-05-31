@@ -67,6 +67,6 @@ export interface StoreOptions {
     readonly sagaRoot?: () => IterableIterator<{}>;
     readonly log?: boolean;
 }
-export declare const createAppStore: (options: StoreOptions) => Store<any, import("redux").AnyAction>;
+export declare const createAppStore: (options: StoreOptions) => Store;
 export {};
 //# sourceMappingURL=sitka.d.ts.map

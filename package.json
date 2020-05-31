@@ -27,6 +27,8 @@
     "redux-saga": "^0.15.4",
     "semantic-release": "17.0.8",
     "ts-jest": "^23.1.4",
-    "typescript": "^3.0.3"
+    "typescript": "^3.0.3",
+    "lodash.merge": ">=4.6.2",
+    "handlebars": ">=4.3.0"
   }
 }

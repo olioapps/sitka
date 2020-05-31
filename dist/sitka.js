@@ -162,11 +162,15 @@ var Sitka = /** @class */ (function () {
             || this.sitkaOptions.sitkaInState === undefined
             // if sitkaInStore is defined, and its not explicitly set to don't include
             || this.sitkaOptions.sitkaInState !== false;
+        var includeLogging = !!this.sitkaOptions && this.sitkaOptions.log === true;
+        var logger = redux_logger_1.createLogger({
+            stateTransformer: function (state) { return state; },
+        });
         var sagaRoot = this.createRoot();
         return {
             defaultState: includeSitka
                 ? __assign({}, this.getDefaultState(), { __sitka__: this }) : __assign({}, this.getDefaultState()),
-            middleware: this.middlewareToAdd,
+            middleware: includeLogging ? this.middlewareToAdd.concat([logger]) : this.middlewareToAdd,
             reducersToCombine: includeSitka
                 ? __assign({}, this.reducersToCombine, { __sitka__: function (state) {
                         if (state === void 0) { state = null; }

@@ -183,6 +183,11 @@ export class Sitka<MODULES = {}> {
             // if sitkaInStore is defined, and its not explicitly set to don't include
             || this.sitkaOptions.sitkaInState !== false
 
+        const includeLogging = !!this.sitkaOptions && this.sitkaOptions.log === true
+        const logger: Middleware = createLogger({
+            stateTransformer: (state: {}) => state,
+        })
+
         const sagaRoot = this.createRoot()
 
         return {
@@ -194,7 +199,7 @@ export class Sitka<MODULES = {}> {
                 : {
                     ...this.getDefaultState(),
                 },
-            middleware: this.middlewareToAdd,
+            middleware: includeLogging ? [...this.middlewareToAdd, logger] : this.middlewareToAdd,
             reducersToCombine: includeSitka 
                 ? {
                     ...this.reducersToCombine,

@@ -41,6 +41,11 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
 
     public abstract moduleName: string
 
+    constructor() {
+        this.getState = this.getState.bind(this)
+        this.mergeState = this.mergeState.bind(this)
+    }
+
     // by default, the redux key is same as the moduleName
     public reduxKey(): string {
         return this.moduleName

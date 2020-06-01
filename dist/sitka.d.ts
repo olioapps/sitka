@@ -9,6 +9,7 @@ declare type ModuleState = {} | undefined | null;
 export declare abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
     modules: MODULES;
     abstract moduleName: string;
+    constructor();
     reduxKey(): string;
     abstract defaultState?: MODULE_STATE;
     protected createAction(v: Partial<MODULE_STATE>, usePayload?: boolean): SitkaModuleAction<MODULE_STATE>;

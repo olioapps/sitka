@@ -50,6 +50,8 @@ var createHandlerKey = function (module, handler) { return ("module_" + module +
 var handlerOriginalFunctionMap = new Map();
 var SitkaModule = /** @class */ (function () {
     function SitkaModule() {
+        this.getState = this.getState.bind(this);
+        this.mergeState = this.mergeState.bind(this);
     }
     // by default, the redux key is same as the moduleName
     SitkaModule.prototype.reduxKey = function () {

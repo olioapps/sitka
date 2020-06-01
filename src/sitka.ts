@@ -84,7 +84,7 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
         return state[this.reduxKey()]
     }
 
-    protected *mergeState(partialState: Partial<MODULE_STATE>, synchronous: boolean = true): {} {
+    protected *mergeState(partialState: Partial<MODULE_STATE>, synchronous: boolean = false): {} {
         const currentState = yield select(this.getState)
         const newState = { ...currentState, ...partialState }
         yield put(this.setState(newState))

@@ -87,7 +87,7 @@ var SitkaModule = /** @class */ (function () {
     };
     SitkaModule.prototype.mergeState = function (partialState, synchronous) {
         var currentState, newState, type;
-        if (synchronous === void 0) { synchronous = true; }
+        if (synchronous === void 0) { synchronous = false; }
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, effects_1.select(this.getState)];

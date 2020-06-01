@@ -16,7 +16,7 @@ import {
     SagaMiddleware,
 } from "redux-saga"
 import createSagaMiddleware from "redux-saga"
-import { all, apply, takeEvery, fork, ForkEffect, CallEffectFn } from "redux-saga/effects"
+import { all, apply, select, put, takeEvery, take, fork, ForkEffect, CallEffectFn } from "redux-saga/effects"
 
 interface PayloadAction extends Action {
     readonly payload?: {}
@@ -73,6 +73,20 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
 
     protected resetState(): Action {
         return this.setState(this.defaultState)
+    }
+
+    protected getState(state: {}): MODULE_STATE {
+        return state[this.reduxKey()]
+    }
+
+    protected *mergeState(partialState: Partial<MODULE_STATE>, synchronous: boolean = true): {} {
+        const currentState = yield select(this.getState)
+        const newState = { ...currentState, ...partialState }
+        yield put(this.setState(newState))
+        if (synchronous) {
+            const type = createStateChangeKey(this.reduxKey())
+            yield take(type)    
+        }
     }
 
     // can be either the action type string, or the module function to watch
@@ -167,7 +181,7 @@ export class Sitka<MODULES = {}> {
 
     public setDispatch(dispatch: Dispatch): void {
         this.dispatch = dispatch
-    }
+    }   
 
     public getModules(): MODULES {
         return this.registeredModules

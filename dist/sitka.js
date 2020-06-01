@@ -80,6 +80,31 @@ var SitkaModule = /** @class */ (function () {
     SitkaModule.prototype.resetState = function () {
         return this.setState(this.defaultState);
     };
+    SitkaModule.prototype.getState = function (state) {
+        return state[this.reduxKey()];
+    };
+    SitkaModule.prototype.mergeState = function (partialState, synchronous) {
+        var currentState, newState, type;
+        if (synchronous === void 0) { synchronous = true; }
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, effects_1.select(this.getState)];
+                case 1:
+                    currentState = _a.sent();
+                    newState = __assign({}, currentState, partialState);
+                    return [4 /*yield*/, effects_1.put(this.setState(newState))];
+                case 2:
+                    _a.sent();
+                    if (!synchronous) return [3 /*break*/, 4];
+                    type = createStateChangeKey(this.reduxKey());
+                    return [4 /*yield*/, effects_1.take(type)];
+                case 3:
+                    _a.sent();
+                    _a.label = 4;
+                case 4: return [2 /*return*/];
+            }
+        });
+    };
     // can be either the action type string, or the module function to watch
     SitkaModule.prototype.createSubscription = function (actionTarget, handler) {
         if (typeof actionTarget === "string") {

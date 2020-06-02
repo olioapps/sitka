@@ -16,7 +16,7 @@ export declare abstract class SitkaModule<MODULE_STATE extends ModuleState, MODU
     protected setState(state: MODULE_STATE, replace?: boolean): Action;
     protected resetState(): Action;
     protected getState(state: {}): MODULE_STATE;
-    protected mergeState(partialState: Partial<MODULE_STATE>, synchronous?: boolean): {};
+    protected mergeState(partialState: Partial<MODULE_STATE>): {};
     protected createSubscription(actionTarget: string | Function, handler: CallEffectFn<any>): SagaMeta;
     provideMiddleware(): Middleware[];
     provideSubscriptions(): SagaMeta[];

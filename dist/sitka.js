@@ -85,9 +85,8 @@ var SitkaModule = /** @class */ (function () {
     SitkaModule.prototype.getState = function (state) {
         return state[this.reduxKey()];
     };
-    SitkaModule.prototype.mergeState = function (partialState, synchronous) {
-        var currentState, newState, type;
-        if (synchronous === void 0) { synchronous = false; }
+    SitkaModule.prototype.mergeState = function (partialState) {
+        var currentState, newState;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0: return [4 /*yield*/, effects_1.select(this.getState)];
@@ -97,13 +96,7 @@ var SitkaModule = /** @class */ (function () {
                     return [4 /*yield*/, effects_1.put(this.setState(newState))];
                 case 2:
                     _a.sent();
-                    if (!synchronous) return [3 /*break*/, 4];
-                    type = createStateChangeKey(this.reduxKey());
-                    return [4 /*yield*/, effects_1.take(type)];
-                case 3:
-                    _a.sent();
-                    _a.label = 4;
-                case 4: return [2 /*return*/];
+                    return [2 /*return*/];
             }
         });
     };

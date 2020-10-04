@@ -34,10 +34,9 @@ interface GeneratorContext {
     readonly context: {}
 }
 
-const handlerOriginalFunctionMap = new Map<Function, GeneratorContext>()
-
 export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
     public modules: MODULES
+    handlerOriginalFunctionMap = new Map<Function, GeneratorContext>()
 
     public abstract moduleName: string
 
@@ -99,7 +98,7 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
                 direct: true,
             }
         } else {
-            const generatorContext: GeneratorContext = handlerOriginalFunctionMap.get(actionTarget)
+            const generatorContext: GeneratorContext = this.handlerOriginalFunctionMap.get(actionTarget)
             return {
                 name: generatorContext.handlerKey,
                 handler,
@@ -120,8 +119,8 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
         return []
     }
 
-    static *callAsGenerator(fn: Function, ...rest: any[]): {} {
-        const generatorContext: GeneratorContext = handlerOriginalFunctionMap.get(fn)
+    protected *callAsGenerator(fn: Function, ...rest: any[]): {} {
+        const generatorContext: GeneratorContext = this.handlerOriginalFunctionMap.get(fn)
         return yield apply(generatorContext.context, generatorContext.fn, <any> rest)
     }
  }
@@ -171,6 +170,7 @@ export class Sitka<MODULES = {}> {
     protected registeredModules: MODULES
     private dispatch?: Dispatch
     private sitkaOptions: SitkaOptions
+    private handlerOriginalFunctionMap = new Map<Function, GeneratorContext>()
 
     constructor(sitkaOptions?: SitkaOptions) {
         this.sitkaOptions = sitkaOptions
@@ -272,6 +272,7 @@ export class Sitka<MODULES = {}> {
             const { middlewareToAdd, sagas, forks, reducersToCombine, doDispatch: dispatch } = this
     
             instance.modules = this.getModules()
+            instance.handlerOriginalFunctionMap = this.handlerOriginalFunctionMap
 
             middlewareToAdd.push(...instance.provideMiddleware())
     
@@ -302,7 +303,7 @@ export class Sitka<MODULES = {}> {
                 })
                 // tslint:disable-next-line:no-any
                 instance[s] = patched
-                handlerOriginalFunctionMap.set(patched, {
+                this.handlerOriginalFunctionMap.set(patched, {
                     handlerKey,
                     fn: original,
                     context: instance,

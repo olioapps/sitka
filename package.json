@@ -1,6 +1,6 @@
 {
   "name": "olio-sitka",
-  "autho": "aron@olioapps.com",
+  "author": "aron@olioapps.com",
   "version": "1.1.0",
   "license": "MIT",
   "files": [
@@ -11,7 +11,9 @@
     "semi": false
   },
   "scripts": {
-    "prepublish": "tsc",
+    "test": "jest",
+    "build": "tsc",
+    "prepublish": "yarn build",
     "semantic-release": "semantic-release"
   },
   "devDependencies": {
@@ -19,15 +21,16 @@
     "@commitlint/config-angular": "^7.1.2",
     "@types/jest": "^23.3.2",
     "git-format-staged": "^2.1.0",
+    "handlebars": ">=4.3.0",
     "husky": "^0.14.3",
+    "jest": "^26.6.0",
+    "lodash.merge": ">=4.6.2",
     "prettier": "^1.14.2",
     "redux": "^4.0.0",
     "redux-logger": "^3.0.6",
     "redux-saga": "^0.15.4",
     "semantic-release": "17.0.8",
     "ts-jest": "^23.1.4",
-    "typescript": "^3.0.3",
-    "lodash.merge": ">=4.6.2",
-    "handlebars": ">=4.3.0"
+    "typescript": "^3.0.3"
   }
 }

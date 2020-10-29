@@ -11,4 +11,6 @@ export class ColorModule extends SitkaModule<ColorState, AppModules> {
     public *handleColor(color: string): IterableIterator<{}> {
         yield put(this.setState(color))
     }
+
+    // todo: add custom handleSetColor to test mergeState
 }

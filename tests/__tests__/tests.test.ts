@@ -8,3 +8,6 @@ test(`get default null value from color module`, () => {
 
   expect(actual).toEqual(expected)
 })
+
+// TODO: test that checks pre state, calls color.handleSetColor, checks post state
+

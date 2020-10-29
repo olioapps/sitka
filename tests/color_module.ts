@@ -1,6 +1,6 @@
 import { put } from "Redux-saga/effects"
-import { SitkaModule } from "../sitka"
-import { AppModules } from "./sitka.test"
+import { SitkaModule } from "../src/sitka"
+import { AppModules } from "./sitka-test"
 
 export type ColorState = string | null
 

@@ -1,5 +1,5 @@
 import { ColorModule } from "./color_module"
-import { Sitka } from  "../sitka"
+import { Sitka } from  "../src/sitka"
 
 export interface AppModules {
   readonly color: ColorModule

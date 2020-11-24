@@ -1,18 +1,21 @@
 import { put } from "Redux-saga/effects"
-import { SitkaModule } from "../src/sitka"
+import { SagaMeta, SitkaModule } from "../src/sitka"
 import { AppModules } from "./sitka-test"
 import { select, call } from "redux-saga/effects"
+
 
 export type TextState = {
     size: number
     value: string
+    numberOfEdits: number
 }
 
 export class TextModule extends SitkaModule<TextState, AppModules> {
     public moduleName: string = "text"
     public defaultState: TextState = {
         size: 12,
-        value: "Hello World"
+        value: "Hello World",
+        numberOfEdits: 0,
     }
 
     // setState
@@ -26,23 +29,40 @@ export class TextModule extends SitkaModule<TextState, AppModules> {
     }
 
     //getState
-    public getModuleState(sitkaState: {}): {}  {
+    public getModuleState(sitkaState: {}): {} {
         return this.getState(sitkaState)
     }
 
     // mergeState
-    public *handleUpdateSize(size: number ): {} {
+    public *handleUpdateSize(size: number): IterableIterator<{}> {
         yield call(this.mergeState, { size })
     }
-    // createAction
+
+    public *handleIncrementNumberOfEdits(): IterableIterator<{}> {
+        const currentState: TextState = yield select(this.getState)
+        yield call(this.mergeState, { numberOfEdits: currentState.numberOfEdits + 1 })
+    }
 
     // createSubscription
-
-    // callAsGenerator
-
-    // provideMiddleware
-
     // provideSubscriptions
+    provideSubscriptions(): SagaMeta[] {
+        return [
+            this.createSubscription(this.modules.color.handleColor,
+            this.handleIncrementNumberOfEdits)
+        ]
+    }
 
     // provideForks
+    public *handleNoOp(): IterableIterator<{}> {
+    }
+    genericFork(): void {
+        setTimeout(() => {
+            this.handleNoOp()
+        }, 500)
+    }
+
+    public provideForks(): {}[] { return [this.genericFork] }
+
+    // provideMiddleware
+    // callAsGenerator
 }

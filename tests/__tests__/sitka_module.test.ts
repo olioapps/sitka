@@ -1,4 +1,5 @@
 import { AppState, store, sitka } from "../sitka-test"
+const { text: textModule } = sitka.getModules()
 
 describe("Sitka Redux Store", () => {
   test(`getState returns expected value`, () => {
@@ -11,7 +12,8 @@ describe("Sitka Redux Store", () => {
     const textActual = state.text
     const textExpected = {
       size: 12,
-      value: "Hello World"
+      value: "Hello World",
+      numberOfEdits: 0
     }
     expect(textActual).toEqual(textExpected)
   })
@@ -32,19 +34,29 @@ describe("SitkaModule", () => {
 
   // TESTS
   test('getState returns moduleState', () => {
-    const { text: textModule } = sitka.getModules()
-
     const actual = textModule.getModuleState(sitkaState)
     const expected = {
       size: 12,
       value: "Hello World",
+      numberOfEdits: 0
     }
 
     expect(actual).toEqual(expected)
   })
 
   test('mergeState sets partial state of module', () => {
-    
+    // handleUpdateSize implements merge state    
+    textModule.handleUpdateSize(5)
+    const { text: actual } = store.getState()
+    const expected = {
+      size: 5,
+      value: "Hello World",
+      numberOfEdits: 0
+    }
+    expect(actual).toEqual(expected)
+  })
+
+  test('provideForks adds fork to Sitka', () => {
   })
 })
 

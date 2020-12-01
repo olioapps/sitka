@@ -56,7 +56,39 @@ describe("SitkaModule", () => {
     expect(actual).toEqual(expected)
   })
 
+  test('able to get defaultState', () => {
+  })
+
+  test('able to get moduleName', () => {
+  })
+
+  test('able to get modules', () => {
+  })
+
+  test('reduxKey returns key', () => {
+  })
+
+  test('setState (protected) updates redux state with handleText (public)', () => {
+  })
+
+  test('resetState (protected) updates redux state to default with handleReset (public)', () => {
+  })
+
+  // SUBSCRIPTION
+  test('subscriptions are created/provided with provideSubscriptions & createSubscription', () => {
+
+  })
+
+  // FORKS
   test('provideForks adds fork to Sitka', () => {
+  })
+
+  // MIDDLEWARE
+  test('provideMiddleware adds middleware to Sitka', () => {
+  })
+
+  // CALL AS GENERATOR
+  test('callAsGenerator adds middleware to Sitka', () => {
   })
 })
 

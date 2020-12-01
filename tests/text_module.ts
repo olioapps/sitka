@@ -3,7 +3,6 @@ import { SagaMeta, SitkaModule } from "../src/sitka"
 import { AppModules } from "./sitka-test"
 import { select, call } from "redux-saga/effects"
 
-
 export type TextState = {
     size: number
     value: string

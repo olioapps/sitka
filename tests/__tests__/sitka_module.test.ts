@@ -90,6 +90,3 @@ describe("SitkaModule", () => {
   test('callAsGenerator adds middleware to Sitka', () => {
   })
 })
-
-// TODO: test that checks pre state, calls color.handleSetColor, checks post state
-

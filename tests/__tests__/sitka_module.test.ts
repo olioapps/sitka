@@ -76,7 +76,6 @@ describe("SitkaModule", () => {
 
   // SUBSCRIPTION
   test('subscriptions are created/provided with provideSubscriptions & createSubscription', () => {
-
   })
 
   // FORKS

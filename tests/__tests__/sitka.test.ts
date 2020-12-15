@@ -1,4 +1,8 @@
 describe("Sitka", () => {
+
+  test(`setDispatch dispatch was called`, () => {
+  })
+
   test(`getModules returns Redux store`, () => {
   })
 

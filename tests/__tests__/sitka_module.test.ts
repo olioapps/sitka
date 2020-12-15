@@ -13,7 +13,8 @@ describe("Sitka Redux Store", () => {
     const textExpected = {
       size: 12,
       value: "Hello World",
-      numberOfEdits: 0
+      numberOfEdits: 0,
+      history: []
     }
     expect(textActual).toEqual(textExpected)
   })
@@ -38,7 +39,8 @@ describe("SitkaModule", () => {
     const expected = {
       size: 12,
       value: "Hello World",
-      numberOfEdits: 0
+      numberOfEdits: 0,
+      history: [],
     }
 
     expect(actual).toEqual(expected)
@@ -51,7 +53,8 @@ describe("SitkaModule", () => {
     const expected = {
       size: 5,
       value: "Hello World",
-      numberOfEdits: 0
+      numberOfEdits: 0,
+      history: ["MODULE_TEXT_HANDLEUPDATESIZE"]
     }
     expect(actual).toEqual(expected)
   })

@@ -2,11 +2,13 @@ import { put } from "Redux-saga/effects"
 import { SagaMeta, SitkaModule } from "../src/sitka"
 import { AppModules } from "./sitka-test"
 import { select, call } from "redux-saga/effects"
+import { Middleware } from "redux"
 
 export type TextState = {
     size: number
     value: string
     numberOfEdits: number
+    history: ReadonlyArray<string>
 }
 
 export class TextModule extends SitkaModule<TextState, AppModules> {
@@ -15,6 +17,7 @@ export class TextModule extends SitkaModule<TextState, AppModules> {
         size: 12,
         value: "Hello World",
         numberOfEdits: 0,
+        history: []
     }
 
     // setState
@@ -37,6 +40,13 @@ export class TextModule extends SitkaModule<TextState, AppModules> {
         yield call(this.mergeState, { size })
     }
 
+    // used by middleware
+    protected *handleAddHistory(actionType: string,): IterableIterator<{}> {
+        const state: TextState = yield select(this.getState)
+        const history = [...state.history, actionType]
+        yield call(this.mergeState, { history })
+    }
+
     public *handleIncrementNumberOfEdits(): IterableIterator<{}> {
         const currentState: TextState = yield select(this.getState)
         yield call(this.mergeState, { numberOfEdits: currentState.numberOfEdits + 1 })
@@ -47,7 +57,7 @@ export class TextModule extends SitkaModule<TextState, AppModules> {
     provideSubscriptions(): SagaMeta[] {
         return [
             this.createSubscription(this.modules.color.handleColor,
-            this.handleIncrementNumberOfEdits)
+                this.handleIncrementNumberOfEdits)
         ]
     }
 
@@ -62,6 +72,22 @@ export class TextModule extends SitkaModule<TextState, AppModules> {
 
     public provideForks(): {}[] { return [this.genericFork] }
 
+    public historyMiddleware: Middleware<{}, {}> = store => next => action => {
+        const result = next(action)
+        switch (action.type) {
+            case "MODULE_TEXT_HANDLEADDHISTORY":
+            case "MODULE_TEXT_CHANGE_STATE":
+                break
+            default:
+                this.handleAddHistory(action.type)
+                break
+        }
+        return result
+    }
+
     // provideMiddleware
+    provideMiddleware(): Middleware[] {
+        return [this.historyMiddleware]
+    }
     // callAsGenerator
 }

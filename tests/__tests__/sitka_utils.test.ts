@@ -1,9 +1,25 @@
 import { sitka } from "../sitka-test"
-import { hasMethod, getInstanceMethodNames } from "../../src/sitka"
+import { hasMethod, getInstanceMethodNames, createAppStore } from "../../src/sitka"
 const { text: textModule } = sitka.getModules()
 
 describe("Sitka Util Functions", () => {
   test(`createAppStore returns Redux store`, () => {
+    const meta = sitka.createSitkaMeta()
+    const store = createAppStore(
+      {
+        initialState: meta.defaultState,
+        reducersToCombine: [meta.reducersToCombine],
+        middleware: meta.middleware,
+        sagaRoot: meta.sagaRoot,
+        log: false,
+      }
+      )
+      expect(store).toEqual(expect.objectContaining({
+        dispatch: expect.any(Function),
+        getState: expect.any(Function),
+        replaceReducer: expect.any(Function),
+        subscribe: expect.any(Function),
+      }))
   })
 
   test(`hasMethod returns true when module has method`, () => {
@@ -15,7 +31,7 @@ describe("Sitka Util Functions", () => {
     const propertyIsNotFunc = hasMethod(textModule, "defaultState")
     expect(propertyIsNotFunc).toBeFalsy()
     const noMethodExists = hasMethod(textModule, "nothingExistsByThisName")
-    expect(noMethodExists).toBeFalsy()
+    expect(noMethodExists).toEqual
   })
 
   test(`getInstanceMethodNames returns array of method names`, () => {

@@ -476,7 +476,7 @@ export const hasMethod = (obj: {}, name: string) => {
     return !!desc && typeof desc.value === "function"
 }
 
-const getInstanceMethodNames = (obj: {}, stop: {}) => {
+export const getInstanceMethodNames = (obj: {}, stop: {}) => {
     const array: string[] = []
     let proto = Object.getPrototypeOf(obj)
     while (proto && proto !== stop) {

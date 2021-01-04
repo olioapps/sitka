@@ -1,5 +1,5 @@
 import { sitka } from "../sitka-test"
-import { hasMethod } from "../../src/sitka"
+import { hasMethod, getInstanceMethodNames } from "../../src/sitka"
 const { text: textModule } = sitka.getModules()
 
 describe("Sitka Util Functions", () => {
@@ -19,6 +19,32 @@ describe("Sitka Util Functions", () => {
   })
 
   test(`getInstanceMethodNames returns array of method names`, () => {
+    const names = [
+      "handleText",
+      "handleReset",
+      "getModuleState",
+      "handleUpdateSize",
+      "handleAddHistory",
+      "handleIncrementNumberOfEdits",
+      "provideSubscriptions",
+      "handleNoOp",
+      "genericFork",
+      "provideForks",
+      "provideMiddleware",
+      "reduxKey",
+      "createAction",
+      "setState",
+      "resetState",
+      "getState",
+      "mergeState",
+      "createSubscription",
+      "provideMiddleware",
+      "provideSubscriptions",
+      "provideForks",
+      "callAsGenerator"
+    ]
+    const methodNames = getInstanceMethodNames(textModule, Object.prototype)
+    expect(methodNames).toEqual(names)
   })
 
   test(`createStateChangeKey returns uppercase state change action type string`, () => {

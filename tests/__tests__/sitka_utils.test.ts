@@ -1,5 +1,5 @@
 import { sitka } from "../sitka-test"
-import { hasMethod, getInstanceMethodNames, createAppStore } from "../../src/sitka"
+import { hasMethod, getInstanceMethodNames, createAppStore, createStateChangeKey, createHandlerKey } from "../../src/sitka"
 const { text: textModule } = sitka.getModules()
 
 describe("Sitka Util Functions", () => {
@@ -65,8 +65,12 @@ describe("Sitka Util Functions", () => {
   })
 
   test(`createStateChangeKey returns uppercase state change action type string`, () => {
+    const stateChangeKey = createStateChangeKey(textModule.moduleName)
+    expect(stateChangeKey).toEqual(`MODULE_TEXT_CHANGE_STATE`)
   })
 
   test(`createHandlerKey returns uppercase handler action type string`, () => {
+    const handlerKey = createHandlerKey(textModule.moduleName, "handleText")
+    expect(handlerKey).toEqual(`MODULE_TEXT_HANDLETEXT`)
   })
 })

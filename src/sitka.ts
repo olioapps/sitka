@@ -25,8 +25,8 @@ export type SitkaModuleAction<T> = Partial<T> & { type: string, payload?: {} } |
 
 type ModuleState = {} | undefined | null
 
-const createStateChangeKey = (module: string) => `module_${module}_change_state`.toUpperCase()
-const createHandlerKey = (module: string, handler: string) => `module_${module}_${handler}`.toUpperCase()
+export const createStateChangeKey = (module: string) => `module_${module}_change_state`.toUpperCase()
+export const createHandlerKey = (module: string, handler: string) => `module_${module}_${handler}`.toUpperCase()
 
 interface GeneratorContext {
     readonly handlerKey: string

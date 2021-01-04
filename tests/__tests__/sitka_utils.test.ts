@@ -20,6 +20,7 @@ describe("Sitka Util Functions", () => {
         replaceReducer: expect.any(Function),
         subscribe: expect.any(Function),
       }))
+      expect(store.getState() === meta.defaultState).toBeTruthy()
   })
 
   test(`hasMethod returns true when module has method`, () => {

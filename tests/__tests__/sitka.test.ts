@@ -1,5 +1,6 @@
 import { Dispatch } from "redux"
-import { AppState, store, sitka } from "../sitka-test"
+import { AppState, store, sitka, AppModules } from "../sitka-test"
+import { Sitka } from "../../src/sitka"
 const { text: textModule } = sitka.getModules()
 
 describe("Sitka", () => {
@@ -11,6 +12,9 @@ describe("Sitka", () => {
     })
 
   })
+  class SitkaMock<T = {}> extends Sitka {
+   public registeredModules: T
+  }
 
   describe('setDispatch', () => {
     // Setup
@@ -41,7 +45,17 @@ describe("Sitka", () => {
     })
   })
 
+  // test('register', () => {
+  // })
+
+
   test(`getModules returns registered modules`, () => {
+    const sitkaMock = new SitkaMock<string>()
+    const expected = 'sitka modules'
+    sitkaMock.registeredModules = expected
+    const actual = sitkaMock.getModules()
+
+    expect(actual).toEqual(expected)
   })
 
   // test(`createSitkaMeta returns expected SitkaMeta`, () => {

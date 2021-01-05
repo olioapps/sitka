@@ -31,9 +31,7 @@
     "redux-saga": "^0.15.4",
     "semantic-release": "17.0.8",
     "ts-jest": "^23.1.4",
-    "typescript": "^3.0.3"
-  },
-  "dependencies": {
+    "typescript": "^3.0.3",
     "rewire": "5.0.0"
   }
 }

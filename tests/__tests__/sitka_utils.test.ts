@@ -1,5 +1,9 @@
 import { sitka } from "../sitka-test"
-import { hasMethod, getInstanceMethodNames, createAppStore, createStateChangeKey, createHandlerKey } from "../../src/sitka"
+import { getInstanceMethodNames, createAppStore, createStateChangeKey, createHandlerKey } from "../../src/sitka"
+import rewire from "rewire"
+
+const utils = rewire("../../dist/sitka.js")
+
 const { text: textModule } = sitka.getModules()
 
 describe("Sitka Util Functions", () => {
@@ -23,6 +27,7 @@ describe("Sitka Util Functions", () => {
       expect(store.getState() === meta.defaultState).toBeTruthy()
   })
   describe(`hasMethod tests`, () => {
+    const hasMethod = utils.__get__("hasMethod")
     test(`hasMethod returns true when module has method`, () => {
       const methodExists = hasMethod(textModule, "handleText")
       expect(methodExists).toBeTruthy()

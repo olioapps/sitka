@@ -1,5 +1,5 @@
 import { sitka } from "../sitka-test"
-import { getInstanceMethodNames, createAppStore, createStateChangeKey, createHandlerKey } from "../../src/sitka"
+import { createAppStore, createHandlerKey } from "../../src/sitka"
 import rewire from "rewire"
 
 const utils = rewire("../../dist/sitka.js")
@@ -41,6 +41,7 @@ describe("Sitka Util Functions", () => {
     })
   })
   describe(`getInstanceMethodNames tests`, () => {
+    const getInstanceMethodNames = utils.__get__("getInstanceMethodNames")
     test(`getInstanceMethodNames returns array of method names`, () => {
       const mockModule = {
         defaultState: {},
@@ -57,6 +58,7 @@ describe("Sitka Util Functions", () => {
     })
   })
   describe(`createStateChangeKey tests`, () => {
+    const createStateChangeKey = utils.__get__("createStateChangeKey")
     test(`createStateChangeKey returns uppercase state change action type string`, () => {
       const stateChangeKey = createStateChangeKey(textModule.moduleName)
       expect(stateChangeKey).toEqual(`MODULE_TEXT_CHANGE_STATE`)

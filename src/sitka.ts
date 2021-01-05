@@ -25,7 +25,7 @@ export type SitkaModuleAction<T> = Partial<T> & { type: string, payload?: {} } |
 
 type ModuleState = {} | undefined | null
 
-export const createStateChangeKey = (module: string) => `module_${module}_change_state`.toUpperCase()
+const createStateChangeKey = (module: string) => `module_${module}_change_state`.toUpperCase()
 export const createHandlerKey = (module: string, handler: string) => `module_${module}_${handler}`.toUpperCase()
 
 interface GeneratorContext {
@@ -476,7 +476,7 @@ const hasMethod = (obj: {}, name: string) => {
     return !!desc && typeof desc.value === "function"
 }
 
-export const getInstanceMethodNames = (obj: {}, stop: {}) => {
+const getInstanceMethodNames = (obj: {}, stop: {}) => {
     const array: string[] = []
     let proto = Object.getPrototypeOf(obj)
     while (proto && proto !== stop) {

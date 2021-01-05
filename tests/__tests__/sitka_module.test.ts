@@ -1,5 +1,12 @@
-import { AppState, store, sitka } from "../sitka-test"
+import { AppState,
+  store,
+  sitka,
+  sitkaNoMiddleware,
+  sitkaWithLogger
+} from "../sitka-test"
+
 const { text: textModule } = sitka.getModules()
+const { text: textModuleWithLogger } = sitkaWithLogger.getModules()
 
 describe("Sitka Redux Store", () => {
   test(`getState returns expected value`, () => {
@@ -85,21 +92,40 @@ describe("SitkaModule", () => {
   test('provideForks adds fork to Sitka', () => {
   })
 
-  // MIDDLEWARE
-
  /*
-  MIDDLEWARE TEST NOTES:
-  enabling the Logger middleware will result in jest console.log errors.
+  MIDDLEWARE
+
+  Testing Notes:
+  enabling Logger middleware and dispatching actions on that instance will result in jest console.log errors.
   tests themselves will still pass.
-
-  if logging is enabled in sitka-test.ts, `expected` value needs to be incremented by 1.
  */
-  test('provideMiddleware adds middleware to Sitka', () => {
-    const actual = sitka.createSitkaMeta().middleware.length
-    const expected = 1
 
-    expect(actual).toEqual(expected)
-  })
+ describe('provideMiddleware adds middleware to Sitka', () => {
+
+   test('middleware provided from a sitka module adds middleware to Sitka', () => {
+
+      const actual = sitka.createSitkaMeta().middleware[0]
+      expect(actual).toEqual(textModule.historyMiddleware)
+   })
+
+   test('providedMiddleware adds middleware to a log enabled Sitka instance', () => {
+
+      // there are two middlewares - one provided by textModule, and the logger.
+      const actualMiddlewareLength = sitkaWithLogger.createSitkaMeta().middleware.length
+      expect(actualMiddlewareLength).toEqual(2)
+
+      // the logger middleware will always be appended to the end of the middleware array
+      // checking that the first is the provided middleware
+      const actualProvidedMiddleware = sitkaWithLogger.createSitkaMeta().middleware[0]
+      expect(actualProvidedMiddleware).toEqual(textModuleWithLogger.historyMiddleware)
+   })
+
+   test('no provided middleware and no logger results in no Sitka middleware', () => {
+
+      const actual = sitkaNoMiddleware.createSitkaMeta().middleware.length
+      expect(actual).toEqual(0)
+   })
+ })
 
   // CALL AS GENERATOR
   test('callAsGenerator adds middleware to Sitka', () => {

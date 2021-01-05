@@ -60,6 +60,14 @@ describe("SitkaModule", () => {
   })
 
   test('able to get defaultState', () => {
+    const expected = { 
+      size: 12, 
+      value: 'Hello World', 
+      numberOfEdits: 0, 
+      history: [] 
+    }
+    const actual = textModule.defaultState
+    expect(actual).toEqual(expected)
   })
 
   test('able to get moduleName', () => {

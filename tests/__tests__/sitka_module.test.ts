@@ -47,7 +47,7 @@ describe("SitkaModule", () => {
   })
 
   test('mergeState sets partial state of module', () => {
-    // handleUpdateSize implements merge state    
+    // handleUpdateSize implements merge state
     textModule.handleUpdateSize(5)
     const { text: actual } = store.getState()
     const expected = {
@@ -101,7 +101,19 @@ describe("SitkaModule", () => {
   })
 
   // MIDDLEWARE
+
+ /*
+  MIDDLEWARE TEST NOTES:
+  enabling the Logger middleware will result in jest console.log errors.
+  tests themselves will still pass.
+
+  if logging is enabled in sitka-test.ts, `expected` value needs to be incremented by 1.
+ */
   test('provideMiddleware adds middleware to Sitka', () => {
+    const actual = sitka.createSitkaMeta().middleware.length
+    const expected = 1
+
+    expect(actual).toEqual(expected)
   })
 
   // CALL AS GENERATOR

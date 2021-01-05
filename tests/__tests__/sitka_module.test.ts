@@ -103,13 +103,11 @@ describe("SitkaModule", () => {
  describe('provideMiddleware adds middleware to Sitka', () => {
 
    test('middleware provided from a sitka module adds middleware to Sitka', () => {
-
       const actual = sitka.createSitkaMeta().middleware[0]
       expect(actual).toEqual(textModule.historyMiddleware)
    })
 
    test('providedMiddleware adds middleware to a log enabled Sitka instance', () => {
-
       // there are two middlewares - one provided by textModule, and the logger.
       const actualMiddlewareLength = sitkaWithLogger.createSitkaMeta().middleware.length
       expect(actualMiddlewareLength).toEqual(2)
@@ -121,7 +119,6 @@ describe("SitkaModule", () => {
    })
 
    test('no provided middleware and no logger results in no Sitka middleware', () => {
-
       const actual = sitkaNoMiddleware.createSitkaMeta().middleware.length
       expect(actual).toEqual(0)
    })

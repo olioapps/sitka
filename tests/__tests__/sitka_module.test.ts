@@ -71,12 +71,19 @@ describe("SitkaModule", () => {
   })
 
   test('able to get moduleName', () => {
+    const actual = textModule.moduleName
+    expect(actual).toEqual("text")
   })
 
   test('able to get modules', () => {
+    const expected = ["color", "text"]
+    const actual = Object.getOwnPropertyNames(textModule.modules)
+    expect(actual).toEqual(expected)
   })
 
   test('reduxKey returns key', () => {
+    const actual = textModule.reduxKey()
+    expect(actual).toEqual("text")
   })
 
   test('setState (protected) updates redux state with handleText (public)', () => {

@@ -32,7 +32,7 @@ describe("Sitka Util Functions", () => {
       const propertyIsNotFunc = hasMethod(textModule, "defaultState")
       expect(propertyIsNotFunc).toBeFalsy()
       const noMethodExists = hasMethod(textModule, "nothingExistsByThisName")
-      expect(noMethodExists).toEqual
+      expect(noMethodExists).toBeFalsy()
     })
   })
   describe(`getInstanceMethodNames tests`, () => {

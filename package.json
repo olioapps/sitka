@@ -32,5 +32,8 @@
     "semantic-release": "17.0.8",
     "ts-jest": "^23.1.4",
     "typescript": "^3.0.3"
+  },
+  "dependencies": {
+    "rewire": "5.0.0"
   }
 }

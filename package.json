@@ -11,7 +11,7 @@
     "semi": false
   },
   "scripts": {
-    "test": "jest",
+    "test": "yarn build && jest",
     "build": "tsc",
     "prepublish": "yarn build",
     "semantic-release": "semantic-release"

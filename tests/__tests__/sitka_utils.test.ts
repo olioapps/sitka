@@ -37,31 +37,17 @@ describe("Sitka Util Functions", () => {
   })
   describe(`getInstanceMethodNames tests`, () => {
     test(`getInstanceMethodNames returns array of method names`, () => {
+      const mockModule = {
+        defaultState: {},
+        mergeState: () => {},
+        handleFunction: () => {},
+      }
       const names = [
-        "handleText",
-        "handleReset",
-        "getModuleState",
-        "handleUpdateSize",
-        "handleAddHistory",
-        "handleIncrementNumberOfEdits",
-        "provideSubscriptions",
-        "handleNoOp",
-        "genericFork",
-        "provideForks",
-        "provideMiddleware",
-        "reduxKey",
-        "createAction",
-        "setState",
-        "resetState",
-        "getState",
         "mergeState",
-        "createSubscription",
-        "provideMiddleware",
-        "provideSubscriptions",
-        "provideForks",
-        "callAsGenerator"
+        "handleFunction"
       ]
-      const methodNames = getInstanceMethodNames(textModule, Object.prototype)
+      const mockModuleObj = Object.create(mockModule)
+      const methodNames = getInstanceMethodNames(mockModuleObj, Object.prototype)
       expect(methodNames).toEqual(names)
     })
   })

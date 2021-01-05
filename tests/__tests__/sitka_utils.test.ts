@@ -22,55 +22,59 @@ describe("Sitka Util Functions", () => {
       }))
       expect(store.getState() === meta.defaultState).toBeTruthy()
   })
-
-  test(`hasMethod returns true when module has method`, () => {
-    const methodExists = hasMethod(textModule, "handleText")
-    expect(methodExists).toBeTruthy()
+  describe(`hasMethod tests`, () => {
+    test(`hasMethod returns true when module has method`, () => {
+      const methodExists = hasMethod(textModule, "handleText")
+      expect(methodExists).toBeTruthy()
+    })
+    
+    test(`hasMethod returns false when module does not have method`, () => {
+      const propertyIsNotFunc = hasMethod(textModule, "defaultState")
+      expect(propertyIsNotFunc).toBeFalsy()
+      const noMethodExists = hasMethod(textModule, "nothingExistsByThisName")
+      expect(noMethodExists).toEqual
+    })
   })
-
-  test(`hasMethod returns false when module does not have method`, () => {
-    const propertyIsNotFunc = hasMethod(textModule, "defaultState")
-    expect(propertyIsNotFunc).toBeFalsy()
-    const noMethodExists = hasMethod(textModule, "nothingExistsByThisName")
-    expect(noMethodExists).toEqual
+  describe(`getInstanceMethodNames tests`, () => {
+    test(`getInstanceMethodNames returns array of method names`, () => {
+      const names = [
+        "handleText",
+        "handleReset",
+        "getModuleState",
+        "handleUpdateSize",
+        "handleAddHistory",
+        "handleIncrementNumberOfEdits",
+        "provideSubscriptions",
+        "handleNoOp",
+        "genericFork",
+        "provideForks",
+        "provideMiddleware",
+        "reduxKey",
+        "createAction",
+        "setState",
+        "resetState",
+        "getState",
+        "mergeState",
+        "createSubscription",
+        "provideMiddleware",
+        "provideSubscriptions",
+        "provideForks",
+        "callAsGenerator"
+      ]
+      const methodNames = getInstanceMethodNames(textModule, Object.prototype)
+      expect(methodNames).toEqual(names)
+    })
   })
-
-  test(`getInstanceMethodNames returns array of method names`, () => {
-    const names = [
-      "handleText",
-      "handleReset",
-      "getModuleState",
-      "handleUpdateSize",
-      "handleAddHistory",
-      "handleIncrementNumberOfEdits",
-      "provideSubscriptions",
-      "handleNoOp",
-      "genericFork",
-      "provideForks",
-      "provideMiddleware",
-      "reduxKey",
-      "createAction",
-      "setState",
-      "resetState",
-      "getState",
-      "mergeState",
-      "createSubscription",
-      "provideMiddleware",
-      "provideSubscriptions",
-      "provideForks",
-      "callAsGenerator"
-    ]
-    const methodNames = getInstanceMethodNames(textModule, Object.prototype)
-    expect(methodNames).toEqual(names)
+  describe(`createStateChangeKey tests`, () => {
+    test(`createStateChangeKey returns uppercase state change action type string`, () => {
+      const stateChangeKey = createStateChangeKey(textModule.moduleName)
+      expect(stateChangeKey).toEqual(`MODULE_TEXT_CHANGE_STATE`)
+    })
   })
-
-  test(`createStateChangeKey returns uppercase state change action type string`, () => {
-    const stateChangeKey = createStateChangeKey(textModule.moduleName)
-    expect(stateChangeKey).toEqual(`MODULE_TEXT_CHANGE_STATE`)
-  })
-
-  test(`createHandlerKey returns uppercase handler action type string`, () => {
-    const handlerKey = createHandlerKey(textModule.moduleName, "handleText")
-    expect(handlerKey).toEqual(`MODULE_TEXT_HANDLETEXT`)
+  describe(`createHandlerKey tests`, () => {
+    test(`createHandlerKey returns uppercase handler action type string`, () => {
+      const handlerKey = createHandlerKey(textModule.moduleName, "handleText")
+      expect(handlerKey).toEqual(`MODULE_TEXT_HANDLETEXT`)
+    })
   })
 })

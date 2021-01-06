@@ -87,6 +87,15 @@ describe("SitkaModule", () => {
   })
 
   test('setState (protected) updates redux state with handleText (public)', () => {
+    const newState = {
+      size: 100,
+      value: "test value",
+      numberOfEdits: 1,
+      history: []
+    }
+    textModule.handleText(newState)
+    const moduleState = textModule.getModuleState(store.getState())
+    expect(moduleState).toEqual(newState)
   })
 
   test('resetState (protected) updates redux state to default with handleReset (public)', () => {

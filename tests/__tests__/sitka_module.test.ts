@@ -4,6 +4,11 @@ import { AppState,
   sitkaNoMiddleware,
   sitkaWithLogger
 } from "../sitka-test"
+import rewire from "rewire"
+import { TextModule, TextModule as TextModuleComponent } from "../text_module"
+import { ColorModule } from "../color_module"
+
+const sitkaRewired = rewire("../../dist/sitka")
 
 const { text: textModule, color: colorModule } = sitka.getModules()
 const { text: textModuleWithLogger } = sitkaWithLogger.getModules()
@@ -30,7 +35,10 @@ describe("Sitka Redux Store", () => {
 describe("SitkaModule", () => {
   // SETUP
   let sitkaState
-
+  let mockSitka
+  beforeEach(() => {
+    mockSitka = new sitkaRewired.Sitka()
+  })
   beforeEach(() => {
     const modules = sitka.getModules()
     Object.values(modules).forEach((module: any) => {
@@ -94,12 +102,20 @@ describe("SitkaModule", () => {
   }
     colorModule.handleColor("blue")
     const updatedTextState = textModule.getModuleState(store.getState())
-    console.log(updatedTextState)
     expect(updatedTextState).toMatchObject(expected)
   })
 
   // FORKS
-  test('provideForks adds fork to Sitka', () => {
+  test('provideForks adds fork to Sitka', (done) => {
+    const genericFork = jest.spyOn(TextModuleComponent.prototype, "genericFork")
+    try {
+      textModule.genericFork()
+      done()
+    } finally {
+      expect(genericFork).toHaveBeenCalled();
+    }
+    mockSitka.register([new TextModule(), new ColorModule()])
+    expect(mockSitka.forks.length).toEqual(1)
   })
 
  /*

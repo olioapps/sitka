@@ -5,7 +5,7 @@ import { AppState,
   sitkaWithLogger
 } from "../sitka-test"
 
-const { text: textModule } = sitka.getModules()
+const { text: textModule, color: colorModule } = sitka.getModules()
 const { text: textModuleWithLogger } = sitkaWithLogger.getModules()
 
 describe("Sitka Redux Store", () => {
@@ -86,6 +86,16 @@ describe("SitkaModule", () => {
 
   // SUBSCRIPTION
   test('subscriptions are created/provided with provideSubscriptions & createSubscription', () => {
+    const expected = { 
+      size: 12,
+      value: 'Hello World',
+      history: [ 'MODULE_COLOR_HANDLECOLOR', 'MODULE_COLOR_CHANGE_STATE' ], 
+      numberOfEdits: 1 
+  }
+    colorModule.handleColor("blue")
+    const updatedTextState = textModule.getModuleState(store.getState())
+    console.log(updatedTextState)
+    expect(updatedTextState).toMatchObject(expected)
   })
 
   // FORKS

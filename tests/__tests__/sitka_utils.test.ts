@@ -1,5 +1,5 @@
 import { sitka } from "../sitka-test"
-import { createAppStore, createHandlerKey } from "../../src/sitka"
+import { createAppStore } from "../../src/sitka"
 import rewire from "rewire"
 
 const utils = rewire("../../dist/sitka.js")
@@ -65,6 +65,7 @@ describe("Sitka Util Functions", () => {
     })
   })
   describe(`createHandlerKey tests`, () => {
+    const createHandlerKey = utils.__get__("createHandlerKey")
     test(`createHandlerKey returns uppercase handler action type string`, () => {
       const handlerKey = createHandlerKey(textModule.moduleName, "handleText")
       expect(handlerKey).toEqual(`MODULE_TEXT_HANDLETEXT`)

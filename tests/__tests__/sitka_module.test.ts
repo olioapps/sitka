@@ -1,4 +1,4 @@
-import { AppState,
+import {
   store,
   sitka,
   sitkaNoMiddleware,
@@ -8,29 +8,16 @@ import { AppState,
 const { text: textModule } = sitka.getModules()
 const { text: textModuleWithLogger } = sitkaWithLogger.getModules()
 
-describe("Sitka Redux Store", () => {
-  test(`getState returns expected value`, () => {
-    const state: AppState = store.getState()
-
-    const colorActual = state.color
-    const colorExpected = null
-    expect(colorActual).toEqual(colorExpected)
-
-    const textActual = state.text
-    const textExpected = {
-      size: 12,
-      value: "Hello World",
-      numberOfEdits: 0,
-      history: []
-    }
-    expect(textActual).toEqual(textExpected)
-  })
-})
-
 describe("SitkaModule", () => {
   // SETUP
+  const defaultTextModuleState = { 
+    size: 12, 
+    value: "Hello World", 
+    numberOfEdits: 0, 
+    history: [] 
+  }
   let sitkaState
-
+  
   beforeEach(() => {
     const modules = sitka.getModules()
     Object.values(modules).forEach((module: any) => {
@@ -43,14 +30,8 @@ describe("SitkaModule", () => {
   // TESTS
   test('getState returns moduleState', () => {
     const actual = textModule.getModuleState(sitkaState)
-    const expected = {
-      size: 12,
-      value: "Hello World",
-      numberOfEdits: 0,
-      history: [],
-    }
 
-    expect(actual).toEqual(expected)
+    expect(actual).toEqual(defaultTextModuleState)
   })
 
   test('mergeState sets partial state of module', () => {
@@ -67,14 +48,8 @@ describe("SitkaModule", () => {
   })
 
   test('able to get defaultState', () => {
-    const expected = { 
-      size: 12, 
-      value: 'Hello World', 
-      numberOfEdits: 0, 
-      history: [] 
-    }
     const actual = textModule.defaultState
-    expect(actual).toEqual(expected)
+    expect(actual).toEqual(defaultTextModuleState)
   })
 
   test('able to get moduleName', () => {
@@ -116,12 +91,7 @@ describe("SitkaModule", () => {
     textModule.handleReset()
     const currentState = textModule.getModuleState(store.getState())
     textModule.getModuleState(store.getState())
-    expect(currentState).toEqual({
-      size: 12,
-      value: "Hello World",
-      numberOfEdits: 0,
-      history: []
-    })
+    expect(currentState).toEqual(defaultTextModuleState)
   })
 
   // SUBSCRIPTION

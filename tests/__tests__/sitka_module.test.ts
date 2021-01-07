@@ -85,17 +85,19 @@ describe("SitkaModule", () => {
     expect(moduleState).toEqual(newTextModuleState)
   })
 
-//   test('resetState (protected) updates redux state to default with handleReset (public)', () => {
-//     // Validates that we successfully change and start with an updated state
-//     textModule.handleText(newTextModuleState)
-//     const nonDefaultState = textModule.getModuleState(store.getState())
-//     expect(nonDefaultState).toEqual(newTextModuleState)
-//     // Validates we reset to default state
-//     textModule.handleReset()
-//     const currentState = textModule.getModuleState(store.getState())
-//     textModule.getModuleState(store.getState())
-//     expect(currentState).toEqual(defaultTextModuleState)
-//   })
+  test('resetState (protected) updates redux state to default with handleReset (public)', () => {
+    const { sitka, store } = createSitkaAndStore()
+    const { text: textModule } = sitka.getModules()
+    // Validates that we successfully change and start with an updated state
+    textModule.handleText(newTextModuleState)
+    const nonDefaultState = textModule.getStateTestDelegate(store.getState())
+    expect(nonDefaultState).toEqual(newTextModuleState)
+    // Validates we reset to default state
+    textModule.handleReset()
+    const currentState = textModule.getStateTestDelegate(store.getState())
+    textModule.getStateTestDelegate(store.getState())
+    expect(currentState).toEqual(defaultTextModuleState)
+  })
 
 //   // SUBSCRIPTION
 //   test('subscriptions are created/provided with provideSubscriptions & createSubscription', () => {

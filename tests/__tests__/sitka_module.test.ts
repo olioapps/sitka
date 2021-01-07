@@ -100,15 +100,17 @@ describe("SitkaModule", () => {
   })
 
   // SUBSCRIPTION
-  // test('subscriptions are created/provided with provideSubscriptions & createSubscription', () => {
-  //   // Validates that we start with default state
-  //   const startingEditsState = textModule.getModuleState(store.getState()).numberOfEdits
-  //   expect(startingEditsState).toEqual(0)
-  //   // Validates that subscribed function is called and updates state
-  //   colorModule.handleColor("blue")
-  //   const updatedEditsState = textModule.getModuleState(store.getState()).numberOfEdits
-  //   expect(updatedEditsState).toEqual(1)
-  // })
+  test('subscriptions are created/provided with provideSubscriptions & createSubscription', () => {
+    const { sitka, store } = createSitkaAndStore()
+    const { text: textModule, color: colorModule } = sitka.getModules()
+    // Validates that we start with default state
+    const startingEditsState = textModule.getStateTestDelegate(store.getState()).numberOfEdits
+    expect(startingEditsState).toEqual(0)
+    // Validates that subscribed function is called and updates state
+    colorModule.handleColor("blue")
+    const updatedEditsState = textModule.getStateTestDelegate(store.getState()).numberOfEdits
+    expect(updatedEditsState).toEqual(1)
+  })
 
   // // FORKS
   // test('provideForks adds fork to Sitka', (done) => {

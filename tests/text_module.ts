@@ -30,7 +30,7 @@ export class TextModule extends SitkaModule<TextState, AppModules> {
     }
 
     //getState
-    public getStateTestDelegate(sitkaState: {}): {} {
+    public getStateTestDelegate(sitkaState: {}): TextState {
         return this.getState(sitkaState)
     }
 

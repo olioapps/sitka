@@ -5,7 +5,6 @@ import {
   AppState,
 } from "../sitka-test"
 import { defaultTextModuleState, TextModule } from "../text_module"
-import { TextModule as TextModuleComponent } from "../text_module"
 import rewire from "rewire"
 const sitkaRewired = rewire("../../dist/sitka")
 
@@ -111,23 +110,24 @@ describe("SitkaModule", () => {
   })
 
   // FORKS
-  // test('provideForks adds fork to Sitka', (done) => {
-  //   const mockSitka = new sitkaRewired.Sitka()
-  //   const sitka = sitkaFactory()
-  //   const { text: textModule } = sitka.getModules()
-  //   // Validates function exists on module and can be called
-  //   const genericFork = jest.spyOn(TextModuleComponent.prototype, "genericFork")
-  //   try {
-  //     textModule.genericFork()
-  //     done()
-  //   } finally {
-  //     expect(genericFork).toHaveBeenCalled();
-  //   }
-  //   // Validates that after registering module, the number of forks belonging to sitka increases
-  //   expect(mockSitka.forks.length).toEqual(0)
-  //   mockSitka.register([new TextModule(), new ColorModule()])
-  //   expect(mockSitka.forks.length).toEqual(1)
-  // })
+  test('provideForks adds fork to Sitka', (done) => {
+    // todo: some issue presenting with alert when running this test
+    const mockSitka = new sitkaRewired.Sitka()
+    const sitka = sitkaFactory()
+    const { text: textModule } = sitka.getModules()
+    // // Validates function exists on module and can be called
+    const genericFork = jest.spyOn(TextModule.prototype, "genericFork")
+    try {
+      textModule.genericFork()
+      done()
+    } finally {
+      expect(genericFork).toHaveBeenCalled()
+    }
+    // Validates that after registering module, the number of forks belonging to sitka increases
+    expect(mockSitka.forks.length).toEqual(0)
+    mockSitka.register([new TextModule(), new ColorModule()])
+    expect(mockSitka.forks.length).toEqual(1)
+  })
 
 /*
   MIDDLEWARE

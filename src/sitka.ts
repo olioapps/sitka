@@ -417,6 +417,7 @@ export class Sitka<MODULES = {}> {
 
     private doDispatch(action: Action): void {
         const { dispatch } = this
+        // console.log(dispatch)
         if (!!dispatch) {
             dispatch(action)
         } else {

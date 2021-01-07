@@ -107,12 +107,12 @@ describe("SitkaModule", () => {
   // SUBSCRIPTION
   test('subscriptions are created/provided with provideSubscriptions & createSubscription', () => {
     // Validates that we start with default state
-    const startingTextState = textModule.getModuleState(store.getState())
-    expect(startingTextState).toEqual(defaultTextModuleState)
+    const startingEditsState = textModule.getModuleState(store.getState()).numberOfEdits
+    expect(startingEditsState).toEqual(0)
     // Validates that subscribed function is called and updates state
     colorModule.handleColor("blue")
-    const updatedNumberState = textModule.getModuleState(store.getState()).numberOfEdits
-    expect(updatedNumberState).toEqual(1)
+    const updatedEditsState = textModule.getModuleState(store.getState()).numberOfEdits
+    expect(updatedEditsState).toEqual(1)
   })
 
   // FORKS
@@ -124,6 +124,7 @@ describe("SitkaModule", () => {
     } finally {
       expect(genericFork).toHaveBeenCalled();
     }
+    expect(mockSitka.forks.length).toEqual(0)
     mockSitka.register([new TextModule(), new ColorModule()])
     expect(mockSitka.forks.length).toEqual(1)
   })

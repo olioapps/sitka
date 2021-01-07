@@ -41,16 +41,12 @@ describe("Sitka Register Method", () => {
   })
 
   test('happy path unit tests (to be cont...)', () => {
-    console.log(sitka)
-
-    // const sitka = new sitkaRewired.Sitka()
     sitka.register([mockColorModule])
-    // console.log('happy path sitka', sitka)
 
     // instance getMethodNamed
     expect(mockGetInstanceMethodNames.mock.calls[0][0]).toBe(mockColorModule)
 
-    // instance provide middleware
+    // instance provides middleware
     expect(mockProvideMiddleWare.mock.calls.length).toBe(1)
     expect(sitka.middlewareToAdd).toEqual(["mock middleware"])
 
@@ -61,7 +57,7 @@ describe("Sitka Register Method", () => {
   })
 
   test('integration test', () => {
-    sitka.register([new ColorModule()])
-    console.log(sitka.registeredModules)
+    const colorModule = new ColorModule()
+    sitka.register([colorModule])
   })
 })

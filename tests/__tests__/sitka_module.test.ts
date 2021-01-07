@@ -111,7 +111,7 @@ describe("SitkaModule", () => {
       value: 'Hello World',
       history: [ 'MODULE_COLOR_HANDLECOLOR', 'MODULE_COLOR_CHANGE_STATE' ], 
       numberOfEdits: 1 
-  }
+    }
     // Validates that we start with default state
     const startingTextState = textModule.getModuleState(store.getState())
     expect(startingTextState).toEqual(defaultTextModuleState)

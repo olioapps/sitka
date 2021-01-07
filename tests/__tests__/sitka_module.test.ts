@@ -106,19 +106,13 @@ describe("SitkaModule", () => {
 
   // SUBSCRIPTION
   test('subscriptions are created/provided with provideSubscriptions & createSubscription', () => {
-    const expected = { 
-      size: 12,
-      value: 'Hello World',
-      history: [ 'MODULE_COLOR_HANDLECOLOR', 'MODULE_COLOR_CHANGE_STATE' ], 
-      numberOfEdits: 1 
-    }
     // Validates that we start with default state
     const startingTextState = textModule.getModuleState(store.getState())
     expect(startingTextState).toEqual(defaultTextModuleState)
     // Validates that subscribed function is called and updates state
     colorModule.handleColor("blue")
-    const updatedTextState = textModule.getModuleState(store.getState())
-    expect(updatedTextState).toMatchObject(expected)
+    const updatedNumberState = textModule.getModuleState(store.getState()).numberOfEdits
+    expect(updatedNumberState).toEqual(1)
   })
 
   // FORKS

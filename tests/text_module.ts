@@ -31,7 +31,7 @@ export class TextModule extends SitkaModule<TextState, AppModules> {
     }
 
     //getState
-    public getModuleState(sitkaState: {}): {} {
+    public getModuleState(sitkaState: {}): TextState {
         return this.getState(sitkaState)
     }
 

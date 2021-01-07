@@ -132,10 +132,11 @@ describe("SitkaModule", () => {
     expect(actualProvidedMiddleware).toEqual(loggingModule.historyMiddleware)
   })
 
-//    test('no provided middleware and no logger results in no Sitka middleware', () => {
-//       const actual = sitkaNoMiddleware.createSitkaMeta().middleware.length
-//       expect(actual).toEqual(0)
-//    })
+   test('no provided middleware and no logger results in no Sitka middleware', () => {
+      const sitkaNoMiddleware = sitkaFactory()
+      const actual = sitkaNoMiddleware.createSitkaMeta().middleware.length
+      expect(actual).toEqual(0)
+   })
  })
 
 //   // CALL AS GENERATOR

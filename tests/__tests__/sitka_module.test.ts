@@ -1,7 +1,4 @@
 import {
-  sitka,
-  sitkaNoMiddleware,
-  sitkaWithLogger,
   sitkaFactory,
   createSitkaAndStore,
   AppState,
@@ -123,16 +120,17 @@ describe("SitkaModule", () => {
     expect(actual).toEqual(sitka.getModules().logging.historyMiddleware)
   })
 
-//    test('providedMiddleware adds middleware to a log enabled Sitka instance', () => {
-//       // there are two middlewares - one provided by textModule, and the logger.
-//       const actualMiddlewareLength = sitkaWithLogger.createSitkaMeta().middleware.length
-//       expect(actualMiddlewareLength).toEqual(2)
-
-//       // the logger middleware will always be appended to the end of the middleware array
-//       // checking that the first is the provided middleware
-//       const actualProvidedMiddleware = sitkaWithLogger.createSitkaMeta().middleware[0]
-//       expect(actualProvidedMiddleware).toEqual(textModuleWithLogger.historyMiddleware)
-//    })
+  test('providedMiddleware adds middleware to a log enabled Sitka instance', () => {
+    const sitkaWithLogger = sitkaFactory({ doLogging: true, doTrackHistory: true })
+    const { logging: loggingModule } = sitkaWithLogger.getModules()
+    // there are two middlewares - one provided by textModule, and the logger.
+    const actualMiddlewareLength = sitkaWithLogger.createSitkaMeta().middleware.length
+    expect(actualMiddlewareLength).toEqual(2)
+    // the logger middleware will always be appended to the end of the middleware array
+    // checking that the first is the provided middleware
+    const actualProvidedMiddleware = sitkaWithLogger.createSitkaMeta().middleware[0]
+    expect(actualProvidedMiddleware).toEqual(loggingModule.historyMiddleware)
+  })
 
 //    test('no provided middleware and no logger results in no Sitka middleware', () => {
 //       const actual = sitkaNoMiddleware.createSitkaMeta().middleware.length

@@ -117,6 +117,7 @@ describe("SitkaModule", () => {
 
   // FORKS
   test('provideForks adds fork to Sitka', (done) => {
+    // Validates function exists on module and can be called
     const genericFork = jest.spyOn(TextModuleComponent.prototype, "genericFork")
     try {
       textModule.genericFork()
@@ -124,6 +125,7 @@ describe("SitkaModule", () => {
     } finally {
       expect(genericFork).toHaveBeenCalled();
     }
+    // Validates that after registering module, the number of forks belonging to sitka increases
     expect(mockSitka.forks.length).toEqual(0)
     mockSitka.register([new TextModule(), new ColorModule()])
     expect(mockSitka.forks.length).toEqual(1)

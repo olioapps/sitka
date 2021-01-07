@@ -16,6 +16,12 @@ describe("SitkaModule", () => {
     numberOfEdits: 0, 
     history: [] 
   }
+  const newTextModuleState = {
+    size: 100,
+    value: "test value",
+    numberOfEdits: 1,
+    history: []
+  }
   let sitkaState
   
   beforeEach(() => {
@@ -69,25 +75,14 @@ describe("SitkaModule", () => {
   })
 
   test('setState (protected) updates redux state with handleText (public)', () => {
-    const newState = {
-      size: 100,
-      value: "test value",
-      numberOfEdits: 1,
-      history: []
-    }
-    textModule.handleText(newState)
+    textModule.handleText(newTextModuleState)
     const moduleState = textModule.getModuleState(store.getState())
-    expect(moduleState).toEqual(newState)
+    expect(moduleState).toEqual(newTextModuleState)
   })
 
   test('resetState (protected) updates redux state to default with handleReset (public)', () => {
-    const newState = {
-      size: 100,
-      value: "test value",
-      numberOfEdits: 1,
-      history: []
-    }
-    textModule.handleText(newState)
+
+    textModule.handleText(newTextModuleState)
     textModule.handleReset()
     const currentState = textModule.getModuleState(store.getState())
     textModule.getModuleState(store.getState())

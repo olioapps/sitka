@@ -5,7 +5,7 @@ import {
   sitkaWithLogger
 } from "../sitka-test"
 
-const { text: textModule } = sitka.getModules()
+const { text: textModule, color: colorModule } = sitka.getModules()
 const { text: textModuleWithLogger } = sitkaWithLogger.getModules()
 
 describe("SitkaModule", () => {
@@ -64,9 +64,11 @@ describe("SitkaModule", () => {
   })
 
   test('able to get modules', () => {
-    const expected = ["color", "text"]
-    const actual = Object.getOwnPropertyNames(textModule.modules)
-    expect(actual).toEqual(expected)
+    const expectedModuleNames = ["color", "text"]
+    const propertyNames = Object.getOwnPropertyNames(textModule.modules)
+    expect(propertyNames).toEqual(expectedModuleNames)
+    expect(textModule.modules[propertyNames[0]]).toEqual(colorModule)
+    expect(textModule.modules[propertyNames[1]]).toEqual(textModule)
   })
 
   test('reduxKey returns key', () => {

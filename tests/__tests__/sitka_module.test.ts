@@ -64,11 +64,11 @@ describe("SitkaModule", () => {
   })
 
   test('able to get modules', () => {
-    const expectedModuleNames = ["color", "text"]
-    const propertyNames = Object.getOwnPropertyNames(textModule.modules)
-    expect(propertyNames).toEqual(expectedModuleNames)
-    expect(textModule.modules[propertyNames[0]]).toEqual(colorModule)
-    expect(textModule.modules[propertyNames[1]]).toEqual(textModule)
+    const expectedModulesValues = {
+      color: colorModule,
+      text: textModule,
+    }
+    expect(textModule.modules).toEqual(expect.objectContaining(expectedModulesValues))
   })
 
   test('reduxKey returns key', () => {

@@ -34,6 +34,18 @@ describe("Sitka Redux Store", () => {
 
 describe("SitkaModule", () => {
   // SETUP
+  const defaultTextModuleState = { 
+    size: 12, 
+    value: "Hello World", 
+    numberOfEdits: 0, 
+    history: [] 
+  }
+  const newTextModuleState = {
+    size: 100,
+    value: "test value",
+    numberOfEdits: 1,
+    history: []
+  }
   let sitkaState
   let mockSitka
   beforeEach(() => {
@@ -100,6 +112,10 @@ describe("SitkaModule", () => {
       history: [ 'MODULE_COLOR_HANDLECOLOR', 'MODULE_COLOR_CHANGE_STATE' ], 
       numberOfEdits: 1 
   }
+    // Validates that we start with default state
+    const startingTextState = textModule.getModuleState(store.getState())
+    expect(startingTextState).toEqual(defaultTextModuleState)
+    // Validates that subscribed function is called and updates state
     colorModule.handleColor("blue")
     const updatedTextState = textModule.getModuleState(store.getState())
     expect(updatedTextState).toMatchObject(expected)

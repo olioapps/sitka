@@ -1,16 +1,18 @@
 import { ColorModule, ColorState } from "./color_module"
 import { Sitka } from "../src/sitka"
 import { TextModule, TextState } from "./text_module"
-import { LoggingModule } from "./logging_module"
+import { LoggingModule, LoggingState } from "./logging_module"
 
 export interface AppModules {
   readonly color: ColorModule
   readonly text: TextModule
+  readonly logging: LoggingModule
 }
 
 export interface AppState {
   readonly color: ColorState
   readonly text: TextState
+  readonly logging: LoggingState
 }
 
 /*
@@ -44,6 +46,12 @@ sitkaNoMiddleware.register([new ColorModule()])
 
 export { sitka, store, sitkaNoMiddleware, sitkaWithLogger }
 
+interface FactoryConfig {
+  readonly doLogging: boolean
+  readonly doTrackHistory: boolean
+  readonly doExcludeStandardTestModules: boolean
+  readonly additionalModules: any[]
+}
 const defaultSitkaFactoryConfig = {
   doLogging: false,
   doTrackHistory: false,
@@ -51,14 +59,20 @@ const defaultSitkaFactoryConfig = {
   additionalModules: [],
  }
 
-export const sitkaFactory = ( 
-  config = defaultSitkaFactoryConfig,
+export const sitkaFactory = (
+  config = {},
 ) => {
+  const composedConfig: FactoryConfig = {
+    ...defaultSitkaFactoryConfig,
+    ...config
+  }
+
   const {
     doLogging,
     doTrackHistory,
     doExcludeStandardTestModules,
-    additionalModules} = config
+    additionalModules
+  } = composedConfig
 
   const sitka = new Sitka<AppModules>({
     log: doLogging,
@@ -82,7 +96,7 @@ export const sitkaFactory = (
   return sitka
 }
 
-export const createSitkaAndStore = (config = defaultSitkaFactoryConfig ) => {
+export const createSitkaAndStore = (config = {} ) => {
   const sitka = sitkaFactory(config)
   const store = sitka.createStore()
   return { sitka, store }

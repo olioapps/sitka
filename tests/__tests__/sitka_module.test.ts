@@ -114,7 +114,7 @@ describe("SitkaModule", () => {
   test('provideForks adds fork to Sitka', (done) => {
     const mockSitka = new sitkaRewired.Sitka()
     const sitka = sitkaFactory()
-    const { text: textModule, color: colorModule } = sitka.getModules()
+    const { text: textModule } = sitka.getModules()
     // Validates function exists on module and can be called
     const genericFork = jest.spyOn(TextModuleComponent.prototype, "genericFork")
     try {

@@ -71,15 +71,19 @@ describe("SitkaModule", () => {
     expect(actual).toEqual("text")
   })
 
-  // test('setState (protected) updates redux state with handleText (public)', () => {
-  //   // Validates the state starts as default
-  //   const startingState = textModule.getModuleState(store.getState())
-  //   expect(startingState).toEqual(defaultTextModuleState)
-  //   // Validates the state updates using handleText, then calling protected setState
-  //   textModule.handleText(newTextModuleState)
-  //   const moduleState = textModule.getModuleState(store.getState())
-  //   expect(moduleState).toEqual(newTextModuleState)
-  // })
+  test('setState (protected) updates redux state with handleText (public)', () => {
+    const { sitka, store } = createSitkaAndStore()
+    const { text: textModule } = sitka.getModules()
+    // Validates the state starts as default
+    const allState = store.getState()
+    const startingState = textModule.getStateTestDelegate(allState)
+    expect(startingState).toEqual(defaultTextModuleState)
+    // Validates the state updates using handleText, then calling protected setState
+    textModule.handleText(newTextModuleState)
+    const newAllState = store.getState()
+    const moduleState = textModule.getStateTestDelegate(newAllState)
+    expect(moduleState).toEqual(newTextModuleState)
+  })
 
 //   test('resetState (protected) updates redux state to default with handleReset (public)', () => {
 //     // Validates that we successfully change and start with an updated state

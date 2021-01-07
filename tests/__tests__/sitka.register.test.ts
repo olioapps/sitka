@@ -59,5 +59,10 @@ describe("Sitka Register Method", () => {
   test('integration test', () => {
     const colorModule = new ColorModule()
     sitka.register([colorModule])
+    console.log(sitka)
+    // use actual sitka instance
+    // register
+    // inspect public sitka.getModules()
+    // use createSitkaMeta() to inspect protected sitka values (like sagas...etc)
   })
 })

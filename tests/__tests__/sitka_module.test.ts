@@ -1,15 +1,13 @@
+import { ColorModule } from "../color_module"
 import {
-  sitka,
-  sitkaNoMiddleware,
-  sitkaWithLogger,
   sitkaFactory,
   createSitkaAndStore,
   AppState,
 } from "../sitka-test"
-import { defaultTextModuleState } from "../text_module"
-
-// const { text: textModule, color: colorModule } = sitka.getModules()
-// const { text: textModuleWithLogger } = sitkaWithLogger.getModules()
+import { defaultTextModuleState, TextModule } from "../text_module"
+import { TextModule as TextModuleComponent } from "../text_module"
+import rewire from "rewire"
+const sitkaRewired = rewire("../../dist/sitka")
 
 describe("SitkaModule", () => {
   // SETUP
@@ -112,21 +110,24 @@ describe("SitkaModule", () => {
     expect(updatedEditsState).toEqual(1)
   })
 
-  // // FORKS
-  // test('provideForks adds fork to Sitka', (done) => {
-  //   // Validates function exists on module and can be called
-  //   const genericFork = jest.spyOn(TextModuleComponent.prototype, "genericFork")
-  //   try {
-  //     textModule.genericFork()
-  //     done()
-  //   } finally {
-  //     expect(genericFork).toHaveBeenCalled();
-  //   }
-  //   // Validates that after registering module, the number of forks belonging to sitka increases
-  //   expect(mockSitka.forks.length).toEqual(0)
-  //   mockSitka.register([new TextModule(), new ColorModule()])
-  //   expect(mockSitka.forks.length).toEqual(1)
-  // })
+  // FORKS
+  test('provideForks adds fork to Sitka', (done) => {
+    const mockSitka = new sitkaRewired.Sitka()
+    const sitka = sitkaFactory()
+    const { text: textModule, color: colorModule } = sitka.getModules()
+    // Validates function exists on module and can be called
+    const genericFork = jest.spyOn(TextModuleComponent.prototype, "genericFork")
+    try {
+      textModule.genericFork()
+      done()
+    } finally {
+      expect(genericFork).toHaveBeenCalled();
+    }
+    // Validates that after registering module, the number of forks belonging to sitka increases
+    expect(mockSitka.forks.length).toEqual(0)
+    mockSitka.register([new TextModule(), new ColorModule()])
+    expect(mockSitka.forks.length).toEqual(1)
+  })
 
 //  /*
 //   MIDDLEWARE

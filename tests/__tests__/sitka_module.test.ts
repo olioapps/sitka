@@ -5,12 +5,8 @@ import {
 } from "../sitka-test"
 import { defaultTextModuleState } from "../text_module"
 
-// const { text: textModule, color: colorModule } = sitka.getModules()
-// const { text: textModuleWithLogger } = sitkaWithLogger.getModules()
-
 describe("SitkaModule", () => {
   // SETUP
-
   const newTextModuleState = {
     size: 100,
     value: "test value",
@@ -57,7 +53,6 @@ describe("SitkaModule", () => {
       color: colorModule,
       text: textModule,
     }
-
     expect(textModule.modules).toEqual(expect.objectContaining(expectedModulesValues))
   })
 

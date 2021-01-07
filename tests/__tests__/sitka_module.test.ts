@@ -101,20 +101,21 @@ describe("SitkaModule", () => {
 //   test('provideForks adds fork to Sitka', () => {
 //   })
 
-//  /*
-//   MIDDLEWARE
+/*
+  MIDDLEWARE
 
-//   Testing Notes:
-//   enabling Logger middleware and dispatching actions on that instance will result in jest console.log errors.
-//   tests themselves will still pass.
-//  */
+  Testing Notes:
+  enabling Logger middleware and dispatching actions on that instance will result in jest console.log errors.
+  tests themselves will still pass.
+ */
 
-//  describe('provideMiddleware adds middleware to Sitka', () => {
+ describe('provideMiddleware adds middleware to Sitka', () => {
 
-//    test('middleware provided from a sitka module adds middleware to Sitka', () => {
-//       const actual = sitka.createSitkaMeta().middleware[0]
-//       expect(actual).toEqual(textModule.historyMiddleware)
-//    })
+  test('middleware provided from a sitka module adds middleware to Sitka', () => {
+    const sitka = sitkaFactory({ doTrackHistory: true })
+    const actual = sitka.createSitkaMeta().middleware[0]
+    expect(actual).toEqual(sitka.getModules().logging.historyMiddleware)
+  })
 
 //    test('providedMiddleware adds middleware to a log enabled Sitka instance', () => {
 //       // there are two middlewares - one provided by textModule, and the logger.
@@ -131,7 +132,7 @@ describe("SitkaModule", () => {
 //       const actual = sitkaNoMiddleware.createSitkaMeta().middleware.length
 //       expect(actual).toEqual(0)
 //    })
-//  })
+ })
 
 //   // CALL AS GENERATOR
 //   test('callAsGenerator adds middleware to Sitka', () => {

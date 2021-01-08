@@ -1,13 +1,12 @@
-import { sitka } from "../sitka-test"
+import { sitkaFactory } from "../sitka-test"
 import { createAppStore } from "../../src/sitka"
 import rewire from "rewire"
 
 const utils = rewire("../../dist/sitka.js")
 
-const { text: textModule } = sitka.getModules()
-
 describe("Sitka Util Functions", () => {
   test(`createAppStore returns Redux store`, () => {
+    const sitka = sitkaFactory()
     const meta = sitka.createSitkaMeta()
     const store = createAppStore(
       {
@@ -27,6 +26,8 @@ describe("Sitka Util Functions", () => {
       expect(store.getState() === meta.defaultState).toBeTruthy()
   })
   describe(`hasMethod tests`, () => {
+    const sitka = sitkaFactory()
+    const { text: textModule } = sitka.getModules()
     const hasMethod = utils.__get__("hasMethod")
     test(`hasMethod returns true when module has method`, () => {
       const methodExists = hasMethod(textModule, "handleText")
@@ -58,6 +59,8 @@ describe("Sitka Util Functions", () => {
     })
   })
   describe(`createStateChangeKey tests`, () => {
+    const sitka = sitkaFactory()
+    const { text: textModule } = sitka.getModules()
     const createStateChangeKey = utils.__get__("createStateChangeKey")
     test(`createStateChangeKey returns uppercase state change action type string`, () => {
       const stateChangeKey = createStateChangeKey(textModule.moduleName)
@@ -65,6 +68,8 @@ describe("Sitka Util Functions", () => {
     })
   })
   describe(`createHandlerKey tests`, () => {
+    const sitka = sitkaFactory()
+    const { text: textModule } = sitka.getModules()
     const createHandlerKey = utils.__get__("createHandlerKey")
     test(`createHandlerKey returns uppercase handler action type string`, () => {
       const handlerKey = createHandlerKey(textModule.moduleName, "handleText")

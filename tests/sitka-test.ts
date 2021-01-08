@@ -16,10 +16,7 @@ export interface AppState {
 }
 
 /*
-  sitka
-  Main testing instance
-  Multiple modules
-  TextModule provides one middleware
+  static sitka instance
  */
 const sitka = new Sitka<AppModules>()
 sitka.register([new ColorModule(), new TextModule()])
@@ -27,24 +24,7 @@ sitka.register([new ColorModule(), new TextModule()])
 // TODO: type correctly.  Might require changes to sitka Create Store
 const store: any = sitka.createStore()
 
-/*
-  sitkaWithLogger
-  Redux Logger enabled instance
-  Multiple modules
-  TextModule provides one middleware
- */
-const sitkaWithLogger = new Sitka<AppModules>({ log: true })
-sitkaWithLogger.register([new ColorModule(), new TextModule()])
-
-/*
-  sitkaNoMiddleware
-  single module instance
-  ColorModule provides no middleware
-*/
-const sitkaNoMiddleware = new Sitka<AppModules>()
-sitkaNoMiddleware.register([new ColorModule()])
-
-export { sitka, store, sitkaNoMiddleware, sitkaWithLogger }
+export { sitka, store }
 
 interface FactoryConfig {
   readonly doLogging: boolean
@@ -59,9 +39,7 @@ const defaultSitkaFactoryConfig = {
   additionalModules: [],
  }
 
-export const sitkaFactory = (
-  config = {},
-) => {
+export const sitkaFactory = (config = {}) => {
   const composedConfig: FactoryConfig = {
     ...defaultSitkaFactoryConfig,
     ...config
@@ -96,7 +74,7 @@ export const sitkaFactory = (
   return sitka
 }
 
-export const createSitkaAndStore = (config = {} ) => {
+export const createSitkaAndStore = (config = {}) => {
   const sitka = sitkaFactory(config)
   const store = sitka.createStore()
   return { sitka, store }

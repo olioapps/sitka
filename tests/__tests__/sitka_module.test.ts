@@ -111,7 +111,11 @@ describe("SitkaModule", () => {
 
   test('middleware provided from a sitka module adds middleware to Sitka', () => {
     const sitka = sitkaFactory({ doTrackHistory: true })
+
+    // get the middleware object from sitka
     const actual = sitka.createSitkaMeta().middleware[0]
+
+    // compare sitka middleware to the provider module middleware
     expect(actual).toEqual(sitka.getModules().logging.historyMiddleware)
   })
 

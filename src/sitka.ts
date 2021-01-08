@@ -1,4 +1,4 @@
-import { 
+import {
     Action,
     applyMiddleware,
     combineReducers,
@@ -6,7 +6,7 @@ import {
     DeepPartial,
     Dispatch,
     Middleware,
-    ReducersMapObject, 
+    ReducersMapObject,
     Store,
     StoreEnhancer,
     compose,
@@ -225,7 +225,7 @@ export class Sitka<MODULES = {}> {
             sagaRoot,
             sagaProvider: (): SitkaSagaMiddlewareProvider => {
                 const middleware = createSagaMiddleware<{}>()
-        
+
                 return {
                     middleware,
                     activate: () => {

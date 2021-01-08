@@ -1,4 +1,4 @@
-import { Dispatch } from "redux"
+import { createStore, Dispatch } from "redux"
 import { createSitkaAndStore } from "../sitka-test"
 import { Sitka } from "../../src/sitka"
 
@@ -59,9 +59,17 @@ describe("Sitka", () => {
     })
   })
 
-  // test(`createStore returns redux Store with appstoreCreator`, () => {
+  test(`createStore returns redux Store with appstoreCreator`, () => {
+    const sitkaMock = new SitkaMock<string>()
+    const sitkaStore = sitkaMock.createStore()
 
-  // })
+    expect(sitkaStore).toEqual(expect.objectContaining({
+      dispatch: expect.any(Function),
+      getState: expect.any(Function),
+      replaceReducer: expect.any(Function),
+      subscribe: expect.any(Function),
+    }))
+  })
 
   // test(`createStore returns redux Store without appstoreCreator`, () => {
   // })

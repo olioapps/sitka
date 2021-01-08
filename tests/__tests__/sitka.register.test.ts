@@ -106,8 +106,8 @@ describe("Sitka Register Method", () => {
       const colorModule = new ColorModule()
       sitka.register([colorModule, textModule])
       const sitkaMeta: any = sitka.createSitkaMeta()
-      const expected = textModule.noOp.bind(textModule)
-      const actual = sitkaMeta.defaultState.__sitka__.forks[0]
+      const expected = [textModule.noOp.bind(textModule)]
+      const actual = sitkaMeta.defaultState.__sitka__.forks
       // console.log(sitkaMeta.defaultState.__sitka__.forks)
       expect(JSON.stringify(actual)).toEqual(JSON.stringify(expected))
     })

@@ -2,7 +2,7 @@ import { ColorModule } from "../color_module"
 import {
   sitkaFactory,
   createSitkaAndStore,
-  AppState,
+  AppState
 } from "../sitka-test"
 import { defaultTextModuleState, TextModule } from "../text_module"
 import rewire from "rewire"
@@ -110,6 +110,7 @@ describe("SitkaModule", () => {
   // FORKS
   test('provideForks adds fork to Sitka', (done) => {
     // todo: some issue presenting with alert when running this test
+    // error only appeared after switching imported sitka to sitka factory
     const mockSitka = new sitkaRewired.Sitka()
     const sitka = sitkaFactory()
     const { text: textModule } = sitka.getModules()

@@ -19,6 +19,10 @@ export class TextModule extends SitkaModule<TextState, AppModules> {
     public moduleName: string = "text"
     public defaultState: TextState = defaultTextModuleState
 
+    public TextModule() {
+        this.noOp = this.noOp.bind(this)
+    }
+
     // setState
     public *handleText(text: TextState): IterableIterator<{}> {
         yield put(this.setState(text))
@@ -54,11 +58,11 @@ export class TextModule extends SitkaModule<TextState, AppModules> {
     }
 
     // provideForks
-    public *handleNoOp(): IterableIterator<{}> {
+    public *noOp(): IterableIterator<{}> {
     }
     genericFork(): void {
         setTimeout(() => {
-            this.handleNoOp()
+            this.noOp()
         }, 500)
     }
 

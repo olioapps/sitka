@@ -87,11 +87,12 @@ describe("Sitka Register Method", () => {
       const sitkaMeta = sitka.createSitkaMeta()
       expect(sitkaMeta.middleware.length).toEqual(1)
     })
-    test("Confirm register adds module handlers to sitka sagas", () => {
+    test("Confirm register adds 'handle' prefixed functions to sitka instance sagas", () => {
       const sitka = new Sitka<AppModules>()
       const colorModule = new ColorModule()
       sitka.register([colorModule])
       const sitkaMeta: any = sitka.createSitkaMeta()
+      // Validates that sitka sagas match the original color module handle functions (extracting literal methods from the handlerOriginalFunctionMap)
       const expectedSagas = [
         { handler: colorModule.handlerOriginalFunctionMap.get(colorModule.handleColor).fn, name: "MODULE_COLOR_HANDLECOLOR" },
         { handler: colorModule.handlerOriginalFunctionMap.get(colorModule.handleReset).fn, name: "MODULE_COLOR_HANDLERESET" }

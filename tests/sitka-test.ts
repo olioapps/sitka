@@ -76,6 +76,6 @@ export const sitkaFactory = (config = {}) => {
 
 export const createSitkaAndStore = (config = {}) => {
   const sitka = sitkaFactory(config)
-  const store = sitka.createStore()
+  const store: any = sitka.createStore()
   return { sitka, store }
 }

@@ -2,16 +2,18 @@ import { AppModules, sitkaFactory } from "../sitka-test"
 import { ColorModule } from "../color_module"
 import rewire from "rewire"
 import { Sitka } from "../../src/sitka"
+import { LoggingModule } from "../logging_module"
+import { TextModule } from "../text_module"
 
-const sitkaRewired = rewire('../../dist/sitka.js')
+const sitkaRewired = rewire("../../dist/sitka.js")
 
 class MockColorModule extends ColorModule {
   public provideMiddleware
 }
 
-const moduleMethodNames = ['provideMiddleware', 'provideSubscriptions', 'provideForks', 'createSubscriptions', 'mergeState', 'getState', 'resetState', 'setState', 'createAction', 'reduxKey', 'constructor']
+const moduleMethodNames = ["provideMiddleware", "provideSubscriptions", "provideForks", "createSubscriptions", "mergeState", "getState", "resetState", "setState", "createAction", "reduxKey", "constructor"]
 
-const colorModuleMethodNames = ['handleColor', 'handleReset', ...moduleMethodNames]
+const colorModuleMethodNames = ["handleColor", "handleReset", ...moduleMethodNames]
 
 describe("Sitka Register Method", () => {
 
@@ -42,7 +44,7 @@ describe("Sitka Register Method", () => {
 
     })
 
-    test('happy path unit tests (to be cont...)', () => {
+    test("happy path unit tests (to be cont...)", () => {
       sitka.register([mockColorModule])
 
       // instance getMethodNamed
@@ -61,9 +63,9 @@ describe("Sitka Register Method", () => {
 
   describe("Register Integration tests", () => {
 
-    test('integration test confirm register registers module', () => {
+    test("Confirm register adds module to registered modules", () => {
       const sitka = new Sitka<AppModules>()
-      // don't forget to pre validate that sitka is not registered
+      // don"t forget to pre validate that sitka is not registered
       const colorModule = new ColorModule()
       sitka.register([colorModule])
       // Validates that we registered color module
@@ -72,13 +74,43 @@ describe("Sitka Register Method", () => {
       // test meta: const meta = sitka.createSitkaMeta()
       // test sages: use createSitkaMeta() to inspect protected sitka values (like sagas...etc)
       // test and see if forked were added when registered module has them in provideForks
-      const sitkaMeta = sitka.createSitkaMeta()
-      // console.log(sitkaMeta.middleware)
+      // const sitkaMeta: any = sitka.createSitkaMeta()
+      // console.log("META: ", sitkaMeta)
+      // console.log(sitkaMeta.defaultState.__sitka__.sagas)
 
     })
-    test('test middleware exists after registering module with middleware', () => {
-      const sitka = sitkaFactory({doLogging: true})
-      console.log(sitka.createSitkaMeta())
+    test("Confirm register adds modules middleware to sitka", () => {
+      // See sitka module tests for complete provideMiddleware testing
+      const sitka = new Sitka<AppModules>()
+      const loggingModule = new LoggingModule()
+      sitka.register([loggingModule])
+      const sitkaMeta = sitka.createSitkaMeta()
+      expect(sitkaMeta.middleware.length).toEqual(1)
+    })
+    test("Confirm register adds module handlers to sitka sagas", () => {
+      const sitka = new Sitka<AppModules>()
+      const colorModule = new ColorModule()
+      sitka.register([colorModule])
+      const sitkaMeta: any = sitka.createSitkaMeta()
+      const funcMap = Array.from(colorModule.handlerOriginalFunctionMap.values())
+      const expectedSagas = [
+        { handler: funcMap[0].fn, name: "MODULE_COLOR_HANDLECOLOR" },
+        { handler: funcMap[1].fn, name: "MODULE_COLOR_HANDLERESET" }
+      ]
+      const actualSagas = sitkaMeta.defaultState.__sitka__.sagas
+      expect(actualSagas).toEqual(expectedSagas)
+    })
+    test("Test and see if forks were added when registered module has them in provideForks", () => {
+      const sitka = new Sitka<AppModules>()
+      const textModule = new TextModule()
+      const colorModule = new ColorModule()
+      sitka.register([colorModule, textModule])
+      const sitkaMeta: any = sitka.createSitkaMeta()
+      const expected = textModule.noOp.bind(textModule)
+      const actual = sitkaMeta.defaultState.__sitka__.forks[0]
+      // console.log(sitkaMeta.defaultState.__sitka__.forks)
+      expect(JSON.stringify(actual)).toEqual(JSON.stringify(expected))
     })
   })
 })
+

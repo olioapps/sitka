@@ -92,10 +92,9 @@ describe("Sitka Register Method", () => {
       const colorModule = new ColorModule()
       sitka.register([colorModule])
       const sitkaMeta: any = sitka.createSitkaMeta()
-      const funcMap = Array.from(colorModule.handlerOriginalFunctionMap.values())
       const expectedSagas = [
-        { handler: funcMap[0].fn, name: "MODULE_COLOR_HANDLECOLOR" },
-        { handler: funcMap[1].fn, name: "MODULE_COLOR_HANDLERESET" }
+        { handler: colorModule.handlerOriginalFunctionMap.get(colorModule.handleColor).fn, name: "MODULE_COLOR_HANDLECOLOR" },
+        { handler: colorModule.handlerOriginalFunctionMap.get(colorModule.handleReset).fn, name: "MODULE_COLOR_HANDLERESET" }
       ]
       const actualSagas = sitkaMeta.defaultState.__sitka__.sagas
       expect(actualSagas).toEqual(expectedSagas)

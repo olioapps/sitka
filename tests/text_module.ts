@@ -62,11 +62,11 @@ export class TextModule extends SitkaModule<TextState, AppModules> {
     }
 
     // provideForks
-    public *handleNoOp(): IterableIterator<{}> {
+    public *noOp(): IterableIterator<{}> {
     }
     genericFork(): void {
         setTimeout(() => {
-            this.handleNoOp()
+            this.noOp()
         }, 500)
     }
 

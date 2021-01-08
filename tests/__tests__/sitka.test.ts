@@ -1,24 +1,16 @@
 import { Dispatch } from "redux"
-import { store, sitka } from "../sitka-test"
+import { createSitkaAndStore } from "../sitka-test"
 import { Sitka } from "../../src/sitka"
-const { text: textModule } = sitka.getModules()
 
 export class SitkaMock<T = {}> extends Sitka {
   public registeredModules: T
  }
 
 describe("Sitka", () => {
-  // SETUP
-  beforeEach(() => {
-    const modules = sitka.getModules()
-    Object.values(modules).forEach((module: any) => {
-      module.handleReset()
-    })
-
-  })
 
   describe('setDispatch', () => {
     // Setup
+    const { sitka, store } = createSitkaAndStore()
     let wasMockDispatched: boolean
     beforeEach(() => {
       wasMockDispatched = false
@@ -32,7 +24,7 @@ describe("Sitka", () => {
       }
 
       sitka.setDispatch(mockDispatch)
-      textModule.handleUpdateSize(20)
+      sitka.getModules().text.handleUpdateSize(20)
 
       const { text: actual } = store.getState()
       const expected = {

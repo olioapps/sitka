@@ -12,6 +12,7 @@
   },
   "scripts": {
     "test": "yarn build && jest",
+    "detectOpenHandles": "yarn build && jest --detectOpenHandles",
     "build": "tsc",
     "prepublish": "yarn build",
     "semantic-release": "semantic-release"

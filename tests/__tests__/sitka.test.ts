@@ -46,10 +46,21 @@ describe("Sitka", () => {
     expect(actual).toEqual(expected)
   })
 
-  // test(`createSitkaMeta returns expected SitkaMeta`, () => {
-  // })
+  test(`createSitkaMeta returns expected SitkaMeta`, () => {
+    const sitkaMock = new SitkaMock<string>()
+    const actual = sitkaMock.createSitkaMeta()
+
+    expect(actual).toMatchObject({
+      defaultState: expect.any(Object),
+      middleware: expect.any(Array),
+      reducersToCombine: expect.any(Object),
+      sagaRoot: expect.any(Function),
+      sagaProvider: expect.any(Function)
+    })
+  })
 
   // test(`createStore returns redux Store with appstoreCreator`, () => {
+
   // })
 
   // test(`createStore returns redux Store without appstoreCreator`, () => {

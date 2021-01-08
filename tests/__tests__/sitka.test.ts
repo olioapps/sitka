@@ -39,7 +39,6 @@ describe("Sitka", () => {
         size: 20,
         value: "Hello World",
         numberOfEdits: 0,
-        history: ["MODULE_TEXT_HANDLEUPDATESIZE"]
       }
       expect(actual).toEqual(expected)
       expect(wasMockDispatched).toEqual(true)

@@ -102,15 +102,20 @@ describe("Sitka Register Method", () => {
     })
     test("Test and see if forks were added when registered module has them in provideForks", () => {
       const sitka = new Sitka<AppModules>()
+      // Validate that sitka starts with no forks
       const preChangeMeta: any = sitka.createSitkaMeta()
       const preChange = preChangeMeta.defaultState.__sitka__.forks
       expect(preChange.length).toEqual(0)
+      // Validate that registering modules adds forks and that running the fork from inside sitka is possible
       const textModule = new TextModule()
       const colorModule = new ColorModule()
+      const genericFork = jest.spyOn(textModule, 'genericFork');
       sitka.register([colorModule, textModule])
       const sitkaMeta: any = sitka.createSitkaMeta()
       const actual = sitkaMeta.defaultState.__sitka__.forks
+      actual[0]()
       expect(actual.length).toEqual(1)
+      expect(genericFork).toHaveBeenCalled()
     })
   })
 })

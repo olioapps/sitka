@@ -102,13 +102,15 @@ describe("Sitka Register Method", () => {
     })
     test("Test and see if forks were added when registered module has them in provideForks", () => {
       const sitka = new Sitka<AppModules>()
+      const preChangeMeta: any = sitka.createSitkaMeta()
+      const preChange = preChangeMeta.defaultState.__sitka__.forks
+      expect(preChange.length).toEqual(0)
       const textModule = new TextModule()
       const colorModule = new ColorModule()
       sitka.register([colorModule, textModule])
       const sitkaMeta: any = sitka.createSitkaMeta()
-      const expected = [textModule.noOp.bind(textModule)]
       const actual = sitkaMeta.defaultState.__sitka__.forks
-      expect(JSON.stringify(actual)).toEqual(JSON.stringify(expected))
+      expect(actual.length).toEqual(1)
     })
   })
 })

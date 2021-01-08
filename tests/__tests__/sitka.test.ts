@@ -1,6 +1,6 @@
-import { createStore, Dispatch } from "redux"
+import { Dispatch } from "redux"
 import { createSitkaAndStore } from "../sitka-test"
-import { Sitka } from "../../src/sitka"
+import { createAppStore, Sitka } from "../../src/sitka"
 
 export class SitkaMock<T = {}> extends Sitka {
   public registeredModules: T
@@ -61,6 +61,30 @@ describe("Sitka", () => {
 
   test(`createStore returns redux Store with appstoreCreator`, () => {
     const sitkaMock = new SitkaMock<string>()
+    const customAppStoreCreator = ((meta) => {
+      const store = createAppStore(
+        {
+          initialState: meta.defaultState,
+          reducersToCombine: [meta.reducersToCombine],
+          middleware: meta.middleware,
+          sagaRoot: meta.sagaRoot,
+          log: false,
+        }
+        )
+        sitkaMock.setDispatch(store.dispatch)
+        return store
+      })
+    const sitkaStore = sitkaMock.createStore(customAppStoreCreator)
+    expect(sitkaStore).toEqual(expect.objectContaining({
+      dispatch: expect.any(Function),
+      getState: expect.any(Function),
+      replaceReducer: expect.any(Function),
+      subscribe: expect.any(Function),
+    }))
+  })
+
+  test(`createStore returns redux Store without appstoreCreator`, () => {
+    const sitkaMock = new SitkaMock<string>()
     const sitkaStore = sitkaMock.createStore()
 
     expect(sitkaStore).toEqual(expect.objectContaining({
@@ -70,7 +94,4 @@ describe("Sitka", () => {
       subscribe: expect.any(Function),
     }))
   })
-
-  // test(`createStore returns redux Store without appstoreCreator`, () => {
-  // })
 })

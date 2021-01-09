@@ -29,12 +29,7 @@ describe("SitkaModule", () => {
     const { store, sitka } = createSitkaAndStore()
     sitka.getModules().text.handleUpdateSize(5)
     const { text: actual }: Partial<AppState> = store.getState()
-    const expected = {
-      size: 5,
-      value: "Hello World",
-      numberOfEdits: 0
-    }
-    expect(actual).toEqual(expected)
+    expect(actual.size).toEqual(5)
   })
 
   test('able to get defaultState', () => {
@@ -139,8 +134,17 @@ describe("SitkaModule", () => {
  describe('provideMiddleware adds middleware to Sitka', () => {
 
   test('middleware provided from a sitka module adds middleware to Sitka', () => {
+    // Validates middleware doesn't exist if sitka is registered without
+    const sitkaNoMiddleware = sitkaFactory()
+    const sitkaNoMiddlewareMeta = sitkaNoMiddleware.createSitkaMeta()
+
+    expect(sitkaNoMiddlewareMeta.middleware).toEqual([])
+    // Validates middleware does exist when module with middleware is registered
     const sitka = sitkaFactory({ doTrackHistory: true })
+    // get the middleware object from sitka
     const actual = sitka.createSitkaMeta().middleware[0]
+    // compare sitka middleware to the provider module middleware
+
     expect(actual).toEqual(sitka.getModules().logging.historyMiddleware)
   })
 

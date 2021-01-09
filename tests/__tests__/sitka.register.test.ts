@@ -65,19 +65,12 @@ describe("Sitka Register Method", () => {
 
     test("Confirm register adds module to registered modules", () => {
       const sitka = new Sitka<AppModules>()
-      // don"t forget to pre validate that sitka is not registered
+      // Validates there are no modules registered to start
+      expect(sitka.getModules()).toEqual({})
+      // Validates that we registered color module with .register
       const colorModule = new ColorModule()
       sitka.register([colorModule])
-      // Validates that we registered color module
       expect(sitka.getModules()).toHaveProperty("color")
-      // test middleware exists after registering module with middleware
-      // test meta: const meta = sitka.createSitkaMeta()
-      // test sages: use createSitkaMeta() to inspect protected sitka values (like sagas...etc)
-      // test and see if forked were added when registered module has them in provideForks
-      // const sitkaMeta: any = sitka.createSitkaMeta()
-      // console.log("META: ", sitkaMeta)
-      // console.log(sitkaMeta.defaultState.__sitka__.sagas)
-
     })
     test("Confirm register adds modules middleware to sitka", () => {
       // See sitka module tests for complete provideMiddleware testing

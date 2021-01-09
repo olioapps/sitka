@@ -26,12 +26,7 @@ describe("SitkaModule", () => {
     const { store, sitka } = createSitkaAndStore()
     sitka.getModules().text.handleUpdateSize(5)
     const { text: actual }: Partial<AppState> = store.getState()
-    const expected = {
-      size: 5,
-      value: "Hello World",
-      numberOfEdits: 0
-    }
-    expect(actual).toEqual(expected)
+    expect(actual.size).toEqual(5)
   })
 
   test('able to get defaultState', () => {

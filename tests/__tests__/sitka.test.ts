@@ -49,7 +49,6 @@ describe("Sitka", () => {
   test(`createSitkaMeta returns expected SitkaMeta`, () => {
     const sitkaMock = new SitkaMock<string>()
     const actual = sitkaMock.createSitkaMeta()
-    const store = sitkaMock.createStore()
     // Validates defaultState property
     const sitkaDefaultStateProperties = (actual.defaultState as any).__sitka__
     const expected = {

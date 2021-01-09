@@ -6,7 +6,6 @@ const utils = rewire("../../dist/sitka.js")
 
 describe("Sitka Util Functions", () => {
   test(`createAppStore returns Redux store`, () => {
-    // todo: using sitka factory results in referenceError: alert is not defined.  Test will still pass
     const sitka = sitkaFactory()
     const meta = sitka.createSitkaMeta()
     const store = createAppStore(

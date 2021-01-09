@@ -1,4 +1,4 @@
-import {
+import { 
     Action,
     applyMiddleware,
     combineReducers,
@@ -6,7 +6,7 @@ import {
     DeepPartial,
     Dispatch,
     Middleware,
-    ReducersMapObject,
+    ReducersMapObject, 
     Store,
     StoreEnhancer,
     compose,

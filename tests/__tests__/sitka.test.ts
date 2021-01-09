@@ -49,13 +49,36 @@ describe("Sitka", () => {
   test(`createSitkaMeta returns expected SitkaMeta`, () => {
     const sitkaMock = new SitkaMock<string>()
     const actual = sitkaMock.createSitkaMeta()
-
-    expect(actual).toMatchObject({
-      defaultState: expect.any(Object),
-      middleware: expect.any(Array),
-      reducersToCombine: expect.any(Object),
-      sagaRoot: expect.any(Function),
-      sagaProvider: expect.any(Function)
+    const store = sitkaMock.createStore()
+    // Validates defaultState property
+    const sitkaDefaultStateProperties = (actual.defaultState as any).__sitka__
+    const expected = {
+      sagas: [],
+      forks: [],
+      reducersToCombine: {},
+      middlewareToAdd: [],
+      handlerOriginalFunctionMap: new Map,
+      sitkaOptions: undefined,
+      registeredModules: {}
+    }
+    expect(sitkaDefaultStateProperties).toMatchObject(expected)
+    expect(sitkaDefaultStateProperties.doDispatch.hasOwnProperty('prototype')).toBeFalsy()
+    expect(sitkaDefaultStateProperties.createStore.hasOwnProperty('prototype')).toBeFalsy()
+    expect(sitkaDefaultStateProperties.createRoot.hasOwnProperty('prototype')).toBeFalsy()
+    // Validates middleware is default empty
+    expect(actual.middleware).toEqual([])
+    // Validates reducersToCombine has correct object value
+    expect(actual.reducersToCombine).toEqual({"__sitka__": expect.any(Function)})
+    // Validates sagaRoot returns object with correct properties
+    expect(actual.sagaRoot()).toMatchObject({
+      next: expect.any(Function),
+      throw: expect.any(Function),
+      return: expect.any(Function)
+    })
+    // Validates sagaProvider returns object with correct properties
+    expect(actual.sagaProvider()).toMatchObject({
+      middleware: expect.any(Function),
+      activate: expect.any(Function)
     })
   })
 

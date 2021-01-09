@@ -75,6 +75,10 @@ describe("Sitka Register Method", () => {
     test("Confirm register adds modules middleware to sitka", () => {
       // See sitka module tests for complete provideMiddleware testing
       const sitka = new Sitka<AppModules>()
+      // Validates there is no middleware before registering sitka
+      const preRegisterSitka = sitka.createSitkaMeta()
+      expect(preRegisterSitka.middleware.length).toEqual(0)
+      // Validates middleware is added after registering module with middleware
       const loggingModule = new LoggingModule()
       sitka.register([loggingModule])
       const sitkaMeta = sitka.createSitkaMeta()
@@ -82,10 +86,14 @@ describe("Sitka Register Method", () => {
     })
     test("Confirm register adds 'handle' prefixed functions to sitka instance sagas", () => {
       const sitka = new Sitka<AppModules>()
+      // Validates sitka has no sagas before registering modules
+      const preRegisterMeta: any = sitka.createSitkaMeta()
+      const preRegisterSagas = preRegisterMeta.defaultState.__sitka__.sagas
+      expect(preRegisterSagas).toEqual([])
+      // Validates that sitka sagas match the original color module handle functions (extracting literal methods from the handlerOriginalFunctionMap)
       const colorModule = new ColorModule()
       sitka.register([colorModule])
       const sitkaMeta: any = sitka.createSitkaMeta()
-      // Validates that sitka sagas match the original color module handle functions (extracting literal methods from the handlerOriginalFunctionMap)
       const expectedSagas = [
         { handler: colorModule.handlerOriginalFunctionMap.get(colorModule.handleColor).fn, name: "MODULE_COLOR_HANDLECOLOR" },
         { handler: colorModule.handlerOriginalFunctionMap.get(colorModule.handleReset).fn, name: "MODULE_COLOR_HANDLERESET" }

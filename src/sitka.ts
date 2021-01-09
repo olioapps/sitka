@@ -225,7 +225,7 @@ export class Sitka<MODULES = {}> {
             sagaRoot,
             sagaProvider: (): SitkaSagaMiddlewareProvider => {
                 const middleware = createSagaMiddleware<{}>()
-
+        
                 return {
                     middleware,
                     activate: () => {

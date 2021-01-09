@@ -101,8 +101,6 @@ describe("SitkaModule", () => {
 
   // FORKS
   test("provideForks adds fork to Sitka", (done) => {
-    // todo: some issue presenting with alert when running this test
-    // error only appeared after switching imported sitka to sitka factory
     const mockSitka = new sitkaRewired.Sitka()
     const sitka = sitkaFactory()
     const { text: textModule } = sitka.getModules()

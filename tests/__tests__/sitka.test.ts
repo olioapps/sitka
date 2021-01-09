@@ -61,6 +61,7 @@ describe("Sitka", () => {
       registeredModules: {}
     }
     expect(sitkaDefaultStateProperties).toMatchObject(expected)
+    // Validates default states functions are bound functions (bound functions don't have a prototype attribute)
     expect(sitkaDefaultStateProperties.doDispatch.hasOwnProperty('prototype')).toBeFalsy()
     expect(sitkaDefaultStateProperties.createStore.hasOwnProperty('prototype')).toBeFalsy()
     expect(sitkaDefaultStateProperties.createRoot.hasOwnProperty('prototype')).toBeFalsy()

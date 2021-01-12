@@ -1,6 +1,8 @@
 import { Dispatch } from "redux"
-import { createSitkaAndStore } from "../sitka-test"
+import { AppModules, createSitkaAndStore } from "../sitka-test"
 import { createAppStore, Sitka } from "../../src/sitka"
+import { TextModule } from "../text_module"
+import { ColorModule } from "../color_module"
 
 export class SitkaMock<T = {}> extends Sitka {
   public registeredModules: T
@@ -27,13 +29,22 @@ describe("Sitka", () => {
   })
 
   describe ('getModules', () => {
-    test(`getModules returns registered modules`, () => {
-      const sitkaMock = new SitkaMock<string>()
-      const expected = 'sitka modules'
-      sitkaMock.registeredModules = expected
-      const actual = sitkaMock.getModules()
 
-      expect(actual).toEqual(expected)
+    test(`getModules returns registered modules`, () => {
+      const textModule = new TextModule()
+      const colorModule = new ColorModule()
+      const sitka = new Sitka<AppModules>()
+      sitka.register([colorModule, textModule])
+
+      const colorModuleName = colorModule.moduleName
+      const textModuleName = textModule.moduleName
+      const actual = sitka.getModules()
+      const expected = {
+        [colorModuleName]: colorModule,
+        [textModuleName]: textModule
+      }
+
+      expect(actual).toMatchObject(expected)
     })
   })
 

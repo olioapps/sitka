@@ -1,5 +1,5 @@
 import { Dispatch } from "redux"
-import { AppModules, createSitkaAndStore } from "../sitka-test"
+import { AppModules, createSitkaAndStore, sitkaFactory } from "../sitka-test"
 import { createAppStore, Sitka } from "../../src/sitka"
 import { TextModule } from "../text_module"
 import { ColorModule } from "../color_module"
@@ -49,12 +49,13 @@ describe("Sitka", () => {
   })
 
   describe ('createSitkaMeta', () => {
-    test(`createSitkaMeta returns expected SitkaMeta`, () => {
-      const sitkaMock = new SitkaMock<string>()
-      const actual = sitkaMock.createSitkaMeta()
+    test('createSitkaMeta returns expected default meta value', () => {
+      // todo: refac -- should only be looking at public
+      // const sitka = sitkaFactory({doExcludeStandardTestModules: true})
+      const sitka = new Sitka<AppModules>()
+      const meta = sitka.createSitkaMeta()
 
-      // Validates defaultState property
-      const sitkaDefaultStateProperties = (actual.defaultState as any).__sitka__
+      const sitkaDefaultStateProperties = (meta.defaultState as any).__sitka__
       const expected = {
         sagas: [],
         forks: [],
@@ -62,33 +63,58 @@ describe("Sitka", () => {
         middlewareToAdd: [],
         handlerOriginalFunctionMap: new Map,
         sitkaOptions: undefined,
-        registeredModules: {}
       }
       expect(sitkaDefaultStateProperties).toMatchObject(expected)
+    })
 
-      // Validates default states functions are bound functions (bound functions don't have a prototype attribute)
-      expect(sitkaDefaultStateProperties.doDispatch.hasOwnProperty('prototype')).toBeFalsy()
-      expect(sitkaDefaultStateProperties.createStore.hasOwnProperty('prototype')).toBeFalsy()
-      expect(sitkaDefaultStateProperties.createRoot.hasOwnProperty('prototype')).toBeFalsy()
+    test.only(`createSitkaMeta returns expected SitkaMeta`, () => {
+      const colorMod = new ColorModule()
+      const textMod = new TextModule()
+      const sitka = sitkaFactory({doTrackHistory: true, doExcludeStandardTestModules: true, additionalModules: [colorMod, textMod]})
 
-      // Validates middleware is default empty
-      expect(actual.middleware).toEqual([])
+      const actual = sitka.createSitkaMeta()
+      console.log(actual);
+      // const actual = (meta.defaultState as any).__sitka__
 
-      // Validates reducersToCombine has correct object value
-      expect(actual.reducersToCombine).toEqual({"__sitka__": expect.any(Function)})
+      // defaultState
+      const expectedDefaultState = {
+        logging: { history: [] },
+        color: null,
+        text: { size: 12, value: 'Hello World', numberOfEdits: 0 }
+      }
 
-      // Validates sagaRoot returns object with correct properties
-      expect(actual.sagaRoot()).toMatchObject({
-        next: expect.any(Function),
-        throw: expect.any(Function),
-        return: expect.any(Function)
+      expect(actual.defaultState).toMatchObject(expectedDefaultState)
+
+      // reducers to combine
+      expect(actual.reducersToCombine).toHaveProperty('color')
+      expect(typeof actual.reducersToCombine.color).toBe("function")
+
+      expect(actual.reducersToCombine).toHaveProperty('logging')
+      expect(typeof actual.reducersToCombine.logging).toBe("function")
+
+      expect(actual.reducersToCombine).toHaveProperty('text')
+      expect(typeof actual.reducersToCombine.text).toBe("function")
+
+      // middlewareToAdd
+      expect(typeof actual.middleware[0]).toBe("function")
+
+      // sagaRoot -- assume that sagaRoot is accurate if it's return includes the expected 'value' prop
+      expect(typeof actual.sagaRoot).toBe("function")
+
+      expect(actual.sagaRoot().next()).toMatchObject({
+        value: {
+          '@@redux-saga/IO': true,
+        }
       })
 
-      // Validates sagaProvider returns object with correct properties
-      expect(actual.sagaProvider()).toMatchObject({
-        middleware: expect.any(Function),
-        activate: expect.any(Function)
-      })
+      // sagaProvider -- assume that sagaProvider is accurate if it has the 'middleware' and 'activate' props
+      expect(typeof actual.sagaProvider).toBe("function")
+      expect(actual.sagaProvider()).toHaveProperty('middleware')
+      expect(actual.sagaProvider()).toHaveProperty('activate')
+
+
+      // todo: bind createSitkaMeta to a store that we control and run things on that store.
+
     })
   })
 

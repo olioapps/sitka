@@ -89,9 +89,10 @@ describe("SitkaModule", () => {
   // SUBSCRIPTION
   test("subscriptions are created/provided with provideSubscriptions & createSubscription", () => {
     const handleIncrementNumberOfEdits = jest.spyOn(TextModule.prototype, "handleIncrementNumberOfEdits")
-    const sitka = sitkaFactory()
+    const { sitka } = createSitkaAndStore()
     const { color: colorModule } = sitka.getModules()
     // Validates that subscribed function is called and updates state
+    expect(handleIncrementNumberOfEdits).not.toHaveBeenCalled()
     colorModule.handleColor("blue")
     expect(handleIncrementNumberOfEdits).toHaveBeenCalled()
   })

@@ -14,11 +14,9 @@
     "test-watch": "yarn build && jest --watch",
     "test": "yarn build && jest",
     "build": "tsc",
-    "prepublish": "yarn build",
-    "semantic-release": "semantic-release"
+    "prepublish": "yarn build"
   },
   "devDependencies": {
-    "@commitlint/cli": "11.0.0",
     "@types/jest": "23.3.14",
     "git-format-staged": "2.1.1",
     "handlebars": ">=4.3.0",
@@ -29,7 +27,6 @@
     "redux": "4.0.5",
     "redux-logger": "3.0.6",
     "redux-saga": "0.15.6",
-    "semantic-release": "17.3.7",
     "ts-jest": "26.4.4",
     "typescript": "3.9.7",
     "rewire": "5.0.0"

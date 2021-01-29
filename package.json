@@ -30,8 +30,8 @@
     "redux": "^4.0.0",
     "redux-logger": "^3.0.6",
     "redux-saga": "^0.15.4",
-    "semantic-release": "17.2.3",
-    "ts-jest": "^23.1.4",
+    "semantic-release": "17.3.7",
+    "ts-jest": "26.4.4",
     "typescript": "^3.0.3",
     "rewire": "5.0.0"
   }

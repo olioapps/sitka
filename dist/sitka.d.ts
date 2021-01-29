@@ -6,8 +6,14 @@ export declare type SitkaModuleAction<T> = (Partial<T> & {
     payload?: {};
 }) | Action;
 declare type ModuleState = {} | undefined | null;
+interface GeneratorContext {
+    readonly handlerKey: string;
+    readonly fn: CallEffectFn<any>;
+    readonly context: {};
+}
 export declare abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
     modules: MODULES;
+    handlerOriginalFunctionMap: Map<Function, GeneratorContext>;
     abstract moduleName: string;
     constructor();
     reduxKey(): string;
@@ -21,7 +27,7 @@ export declare abstract class SitkaModule<MODULE_STATE extends ModuleState, MODU
     provideMiddleware(): Middleware[];
     provideSubscriptions(): SagaMeta[];
     provideForks(): CallEffectFn<any>[];
-    static callAsGenerator(fn: Function, ...rest: any[]): {};
+    protected callAsGenerator(fn: Function, ...rest: any[]): {};
 }
 export interface SitkaSagaMiddlewareProvider {
     middleware: SagaMiddleware<{}>;
@@ -52,6 +58,7 @@ export declare class Sitka<MODULES = {}> {
     protected registeredModules: MODULES;
     private dispatch?;
     private sitkaOptions;
+    private handlerOriginalFunctionMap;
     constructor(sitkaOptions?: SitkaOptions);
     setDispatch(dispatch: Dispatch): void;
     getModules(): MODULES;
@@ -70,6 +77,6 @@ export interface StoreOptions {
     readonly sagaRoot?: () => IterableIterator<{}>;
     readonly log?: boolean;
 }
-export declare const createAppStore: (options: StoreOptions) => Store<any, import("redux").AnyAction>;
+export declare const createAppStore: (options: StoreOptions) => Store;
 export {};
 //# sourceMappingURL=sitka.d.ts.map

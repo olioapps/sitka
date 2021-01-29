@@ -37,19 +37,27 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.createAppStore = exports.Sitka = exports.SitkaMeta = exports.SitkaModule = void 0;
 var redux_1 = require("redux");
 var redux_logger_1 = require("redux-logger");
 var redux_saga_1 = __importDefault(require("redux-saga"));
 var effects_1 = require("redux-saga/effects");
 var createStateChangeKey = function (module) { return ("module_" + module + "_change_state").toUpperCase(); };
 var createHandlerKey = function (module, handler) { return ("module_" + module + "_" + handler).toUpperCase(); };
-var handlerOriginalFunctionMap = new Map();
 var SitkaModule = /** @class */ (function () {
     function SitkaModule() {
+        this.handlerOriginalFunctionMap = new Map();
         this.getState = this.getState.bind(this);
         this.mergeState = this.mergeState.bind(this);
     }
@@ -92,7 +100,7 @@ var SitkaModule = /** @class */ (function () {
                 case 0: return [4 /*yield*/, effects_1.select(this.getState)];
                 case 1:
                     currentState = _a.sent();
-                    newState = __assign({}, currentState, partialState);
+                    newState = __assign(__assign({}, currentState), partialState);
                     return [4 /*yield*/, effects_1.put(this.setState(newState))];
                 case 2:
                     _a.sent();
@@ -110,7 +118,7 @@ var SitkaModule = /** @class */ (function () {
             };
         }
         else {
-            var generatorContext = handlerOriginalFunctionMap.get(actionTarget);
+            var generatorContext = this.handlerOriginalFunctionMap.get(actionTarget);
             return {
                 name: generatorContext.handlerKey,
                 handler: handler,
@@ -127,7 +135,7 @@ var SitkaModule = /** @class */ (function () {
     SitkaModule.prototype.provideForks = function () {
         return [];
     };
-    SitkaModule.callAsGenerator = function (fn) {
+    SitkaModule.prototype.callAsGenerator = function (fn) {
         var _i, generatorContext;
         var rest = [];
         for (_i = 1; _i < arguments.length; _i++) {
@@ -136,7 +144,7 @@ var SitkaModule = /** @class */ (function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    generatorContext = handlerOriginalFunctionMap.get(fn);
+                    generatorContext = this.handlerOriginalFunctionMap.get(fn);
                     return [4 /*yield*/, effects_1.apply(generatorContext.context, generatorContext.fn, rest)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
@@ -161,6 +169,7 @@ var Sitka = /** @class */ (function () {
         // tslint:disable-next-line:no-any
         this.reducersToCombine = {};
         this.middlewareToAdd = [];
+        this.handlerOriginalFunctionMap = new Map();
         this.sitkaOptions = sitkaOptions;
         this.doDispatch = this.doDispatch.bind(this);
         this.createStore = this.createStore.bind(this);
@@ -189,10 +198,10 @@ var Sitka = /** @class */ (function () {
         var sagaRoot = this.createRoot();
         return {
             defaultState: includeSitka
-                ? __assign({}, this.getDefaultState(), { __sitka__: this }) : __assign({}, this.getDefaultState()),
-            middleware: includeLogging ? this.middlewareToAdd.concat([logger]) : this.middlewareToAdd,
+                ? __assign(__assign({}, this.getDefaultState()), { __sitka__: this }) : __assign({}, this.getDefaultState()),
+            middleware: includeLogging ? __spreadArrays(this.middlewareToAdd, [logger]) : this.middlewareToAdd,
             reducersToCombine: includeSitka
-                ? __assign({}, this.reducersToCombine, { __sitka__: function (state) {
+                ? __assign(__assign({}, this.reducersToCombine), { __sitka__: function (state) {
                         if (state === void 0) { state = null; }
                         return state;
                     } }) : __assign({}, this.reducersToCombine),
@@ -236,6 +245,7 @@ var Sitka = /** @class */ (function () {
             var moduleName = instance.moduleName;
             var _a = _this, middlewareToAdd = _a.middlewareToAdd, sagas = _a.sagas, forks = _a.forks, reducersToCombine = _a.reducersToCombine, dispatch = _a.doDispatch;
             instance.modules = _this.getModules();
+            instance.handlerOriginalFunctionMap = _this.handlerOriginalFunctionMap;
             middlewareToAdd.push.apply(middlewareToAdd, instance.provideMiddleware());
             instance.provideForks().forEach(function (f) {
                 forks.push(f.bind(instance));
@@ -259,7 +269,7 @@ var Sitka = /** @class */ (function () {
                 });
                 // tslint:disable-next-line:no-any
                 instance[s] = patched;
-                handlerOriginalFunctionMap.set(patched, {
+                _this.handlerOriginalFunctionMap.set(patched, {
                     handlerKey: handlerKey,
                     fn: original,
                     context: instance,
@@ -315,7 +325,7 @@ var Sitka = /** @class */ (function () {
             .map(function (k) { return modules[k]; })
             .reduce(function (acc, m) {
             var _a;
-            return (__assign({}, acc, (_a = {}, _a[m.moduleName] = m.defaultState, _a)));
+            return (__assign(__assign({}, acc), (_a = {}, _a[m.moduleName] = m.defaultState, _a)));
         }, {});
     };
     Sitka.prototype.createRoot = function () {
@@ -410,9 +420,9 @@ exports.createAppStore = function (options) {
     var sagaMiddleware = redux_saga_1.default();
     var commonMiddleware = log
         ? [sagaMiddleware, logger] : [sagaMiddleware];
-    var appReducer = reducersToCombine.reduce(function (acc, r) { return (__assign({}, acc, r)); }, {});
-    var combinedMiddleware = commonMiddleware.concat(middleware);
-    var store = redux_1.createStore(redux_1.combineReducers(appReducer), initialState, redux_1.compose.apply(void 0, storeEnhancers.concat([redux_1.applyMiddleware.apply(void 0, combinedMiddleware)])));
+    var appReducer = reducersToCombine.reduce(function (acc, r) { return (__assign(__assign({}, acc), r)); }, {});
+    var combinedMiddleware = __spreadArrays(commonMiddleware, middleware);
+    var store = redux_1.createStore(redux_1.combineReducers(appReducer), initialState, redux_1.compose.apply(void 0, __spreadArrays(storeEnhancers, [redux_1.applyMiddleware.apply(void 0, combinedMiddleware)])));
     if (sagaRoot) {
         sagaMiddleware.run(sagaRoot);
     }

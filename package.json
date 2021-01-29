@@ -11,6 +11,7 @@
     "semi": false
   },
   "scripts": {
+    "test-watch": "yarn build && jest --watch",
     "test": "yarn build && jest",
     "build": "tsc",
     "prepublish": "yarn build",

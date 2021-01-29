@@ -27,10 +27,10 @@ const store: any = sitka.createStore()
 export { sitka, store }
 
 interface FactoryConfig {
-  readonly doLogging: boolean
-  readonly doTrackHistory: boolean
-  readonly doExcludeStandardTestModules: boolean
-  readonly additionalModules: any[]
+  readonly doLogging?: boolean
+  readonly doTrackHistory?: boolean
+  readonly doExcludeStandardTestModules?: boolean
+  readonly additionalModules?: any[]
 }
 const defaultSitkaFactoryConfig = {
   doLogging: false,
@@ -39,7 +39,7 @@ const defaultSitkaFactoryConfig = {
   additionalModules: [],
  }
 
-export const sitkaFactory = (config = {}) => {
+export const sitkaFactory = (config: FactoryConfig = {}) => {
   const composedConfig: FactoryConfig = {
     ...defaultSitkaFactoryConfig,
     ...config
@@ -74,8 +74,8 @@ export const sitkaFactory = (config = {}) => {
   return sitka
 }
 
-export const createSitkaAndStore = (config = {}) => {
+export const createSitkaAndStore = (config: FactoryConfig = {}) => {
   const sitka = sitkaFactory(config)
-  const store = sitka.createStore()
+  const store: any = sitka.createStore()
   return { sitka, store }
 }

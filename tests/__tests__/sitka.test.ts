@@ -1,15 +1,14 @@
-import { Dispatch } from "redux"
-import { AppModules, createSitkaAndStore, sitkaFactory } from "../sitka-test"
-import { createAppStore, Sitka } from "../../src/sitka"
-import { TextModule } from "../text_module"
-import { ColorModule } from "../color_module"
+import { Dispatch } from 'redux'
+import { AppModules, createSitkaAndStore, sitkaFactory } from '../sitka-test'
+import { createAppStore, Sitka } from '../../src/sitka'
+import { TextModule } from '../text_module'
+import { ColorModule } from '../color_module'
 
 export class SitkaMock<T = {}> extends Sitka {
   public registeredModules: T
- }
+}
 
-describe("Sitka", () => {
-
+describe('Sitka', () => {
   describe('setDispatch', () => {
     test(`setDispatch dispatch was called`, () => {
       const { sitka, store } = createSitkaAndStore()
@@ -28,8 +27,7 @@ describe("Sitka", () => {
     })
   })
 
-  describe ('getModules', () => {
-
+  describe('getModules', () => {
     test(`getModules returns registered modules`, () => {
       const textModule = new TextModule()
       const colorModule = new ColorModule()
@@ -41,14 +39,14 @@ describe("Sitka", () => {
       const actual = sitka.getModules()
       const expected = {
         [colorModuleName]: colorModule,
-        [textModuleName]: textModule
+        [textModuleName]: textModule,
       }
 
       expect(actual).toMatchObject(expected)
     })
   })
 
-  describe ('createSitkaMeta', () => {
+  describe('createSitkaMeta', () => {
     test('createSitkaMeta returns expected default meta value', () => {
       // todo: refac -- should only be looking at public
       // const sitka = sitkaFactory({doExcludeStandardTestModules: true})
@@ -61,7 +59,7 @@ describe("Sitka", () => {
         forks: [],
         reducersToCombine: {},
         middlewareToAdd: [],
-        handlerOriginalFunctionMap: new Map,
+        handlerOriginalFunctionMap: new Map(),
         sitkaOptions: undefined,
       }
       expect(sitkaDefaultStateProperties).toMatchObject(expected)
@@ -70,90 +68,94 @@ describe("Sitka", () => {
     test.only(`createSitkaMeta returns expected SitkaMeta`, () => {
       const colorMod = new ColorModule()
       const textMod = new TextModule()
-      const sitka = sitkaFactory({doTrackHistory: true, doExcludeStandardTestModules: true, additionalModules: [colorMod, textMod]})
+      const sitka = sitkaFactory({
+        doTrackHistory: true,
+        doExcludeStandardTestModules: true,
+        additionalModules: [colorMod, textMod],
+      })
 
       const actual = sitka.createSitkaMeta()
-      console.log(actual);
+      console.log(actual)
       // const actual = (meta.defaultState as any).__sitka__
 
       // defaultState
       const expectedDefaultState = {
         logging: { history: [] },
         color: null,
-        text: { size: 12, value: 'Hello World', numberOfEdits: 0 }
+        text: { size: 12, value: 'Hello World', numberOfEdits: 0 },
       }
 
       expect(actual.defaultState).toMatchObject(expectedDefaultState)
 
       // reducers to combine
       expect(actual.reducersToCombine).toHaveProperty('color')
-      expect(typeof actual.reducersToCombine.color).toBe("function")
+      expect(typeof actual.reducersToCombine.color).toBe('function')
 
       expect(actual.reducersToCombine).toHaveProperty('logging')
-      expect(typeof actual.reducersToCombine.logging).toBe("function")
+      expect(typeof actual.reducersToCombine.logging).toBe('function')
 
       expect(actual.reducersToCombine).toHaveProperty('text')
-      expect(typeof actual.reducersToCombine.text).toBe("function")
+      expect(typeof actual.reducersToCombine.text).toBe('function')
 
       // middlewareToAdd
-      expect(typeof actual.middleware[0]).toBe("function")
+      expect(typeof actual.middleware[0]).toBe('function')
 
       // sagaRoot -- assume that sagaRoot is accurate if it's return includes the expected 'value' prop
-      expect(typeof actual.sagaRoot).toBe("function")
+      expect(typeof actual.sagaRoot).toBe('function')
 
       expect(actual.sagaRoot().next()).toMatchObject({
         value: {
           '@@redux-saga/IO': true,
-        }
+        },
       })
 
       // sagaProvider -- assume that sagaProvider is accurate if it has the 'middleware' and 'activate' props
-      expect(typeof actual.sagaProvider).toBe("function")
+      expect(typeof actual.sagaProvider).toBe('function')
       expect(actual.sagaProvider()).toHaveProperty('middleware')
       expect(actual.sagaProvider()).toHaveProperty('activate')
 
-
       // todo: bind createSitkaMeta to a store that we control and run things on that store.
-
     })
   })
 
-  describe ('createStore', () => {
+  describe('createStore', () => {
     test(`createStore returns redux Store with appstoreCreator`, () => {
       const sitkaMock = new SitkaMock<string>()
-      const customAppStoreCreator = ((meta) => {
-        const store = createAppStore(
-          {
-            initialState: meta.defaultState,
-            reducersToCombine: [meta.reducersToCombine],
-            middleware: meta.middleware,
-            sagaRoot: meta.sagaRoot,
-            log: false,
-          }
-          )
-          sitkaMock.setDispatch(store.dispatch)
-          return store
+      const customAppStoreCreator = meta => {
+        const store = createAppStore({
+          initialState: meta.defaultState,
+          reducersToCombine: [meta.reducersToCombine],
+          middleware: meta.middleware,
+          sagaRoot: meta.sagaRoot,
+          log: false,
         })
+        sitkaMock.setDispatch(store.dispatch)
+        return store
+      }
       const sitkaStore = sitkaMock.createStore(customAppStoreCreator)
 
-      expect(sitkaStore).toEqual(expect.objectContaining({
-        dispatch: expect.any(Function),
-        getState: expect.any(Function),
-        replaceReducer: expect.any(Function),
-        subscribe: expect.any(Function),
-      }))
+      expect(sitkaStore).toEqual(
+        expect.objectContaining({
+          dispatch: expect.any(Function),
+          getState: expect.any(Function),
+          replaceReducer: expect.any(Function),
+          subscribe: expect.any(Function),
+        })
+      )
     })
 
     test(`createStore returns redux Store without appstoreCreator`, () => {
       const sitkaMock = new SitkaMock<string>()
       const sitkaStore = sitkaMock.createStore()
 
-      expect(sitkaStore).toEqual(expect.objectContaining({
-        dispatch: expect.any(Function),
-        getState: expect.any(Function),
-        replaceReducer: expect.any(Function),
-        subscribe: expect.any(Function),
-      }))
+      expect(sitkaStore).toEqual(
+        expect.objectContaining({
+          dispatch: expect.any(Function),
+          getState: expect.any(Function),
+          replaceReducer: expect.any(Function),
+          subscribe: expect.any(Function),
+        })
+      )
     })
   })
 })

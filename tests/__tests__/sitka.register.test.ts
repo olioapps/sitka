@@ -1,23 +1,34 @@
-import { AppModules, sitkaFactory } from "../sitka-test"
-import { ColorModule } from "../color_module"
-import rewire from "rewire"
-import { Sitka } from "../../src/sitka"
-import { LoggingModule } from "../logging_module"
-import { TextModule } from "../text_module"
+import { AppModules, sitkaFactory } from '../sitka-test'
+import { ColorModule } from '../color_module'
+import rewire from 'rewire'
+import { Sitka } from '../../src/sitka'
+import { LoggingModule } from '../logging_module'
+import { TextModule } from '../text_module'
 
-const sitkaRewired = rewire("../../dist/sitka.js")
+const sitkaRewired = rewire('../../dist/sitka.js')
 
 class MockColorModule extends ColorModule {
   public provideMiddleware
 }
 
-const moduleMethodNames = ["provideMiddleware", "provideSubscriptions", "provideForks", "createSubscriptions", "mergeState", "getState", "resetState", "setState", "createAction", "reduxKey", "constructor"]
+const moduleMethodNames = [
+  'provideMiddleware',
+  'provideSubscriptions',
+  'provideForks',
+  'createSubscriptions',
+  'mergeState',
+  'getState',
+  'resetState',
+  'setState',
+  'createAction',
+  'reduxKey',
+  'constructor',
+]
 
-const colorModuleMethodNames = ["handleColor", "handleReset", ...moduleMethodNames]
+const colorModuleMethodNames = ['handleColor', 'handleReset', ...moduleMethodNames]
 
-describe("Sitka Register Method", () => {
-
-  describe("Register Unit tests", () => {
+describe('Sitka Register Method', () => {
+  describe('Register Unit tests', () => {
     // SETUP
     let mockColorModule
     let mockGetInstanceMethodNames
@@ -30,8 +41,8 @@ describe("Sitka Register Method", () => {
       sitka = new sitkaRewired.Sitka()
       mockColorModule = new MockColorModule()
       mockGetInstanceMethodNames = jest.fn().mockReturnValueOnce(colorModuleMethodNames)
-      sitkaRewired.__set__("getInstanceMethodNames", mockGetInstanceMethodNames)
-      mockProvideMiddleWare = jest.fn().mockReturnValue(["mock middleware"])
+      sitkaRewired.__set__('getInstanceMethodNames', mockGetInstanceMethodNames)
+      mockProvideMiddleWare = jest.fn().mockReturnValue(['mock middleware'])
       mockColorModule.provideMiddleware = mockProvideMiddleWare
       mockFork = jest.fn()
       mockProvideForks = jest.fn().mockReturnValue([{ bind: mockFork }])
@@ -41,10 +52,9 @@ describe("Sitka Register Method", () => {
       Object.values(modules).forEach((module: any) => {
         module.handleReset()
       })
-
     })
 
-    test("happy path unit tests (to be cont...)", () => {
+    test('happy path unit tests (to be cont...)', () => {
       sitka.register([mockColorModule])
 
       // instance getMethodNamed
@@ -52,7 +62,7 @@ describe("Sitka Register Method", () => {
 
       // instance provides middleware
       expect(mockProvideMiddleWare.mock.calls.length).toBe(1)
-      expect(sitka.middlewareToAdd).toEqual(["mock middleware"])
+      expect(sitka.middlewareToAdd).toEqual(['mock middleware'])
 
       // instance provides forks
       expect(mockFork.mock.calls[0][0]).toBe(mockColorModule)
@@ -61,18 +71,17 @@ describe("Sitka Register Method", () => {
     })
   })
 
-  describe("Register Integration tests", () => {
-
-    test("Confirm register adds module to registered modules", () => {
+  describe('Register Integration tests', () => {
+    test('Confirm register adds module to registered modules', () => {
       const sitka = new Sitka<AppModules>()
       // Validates there are no modules registered to start
       expect(sitka.getModules()).toEqual({})
       // Validates that we registered color module with .register
       const colorModule = new ColorModule()
       sitka.register([colorModule])
-      expect(sitka.getModules()).toHaveProperty("color")
+      expect(sitka.getModules()).toHaveProperty('color')
     })
-    test("Confirm register adds modules middleware to sitka", () => {
+    test('Confirm register adds modules middleware to sitka', () => {
       // See sitka module tests for complete provideMiddleware testing
       const sitka = new Sitka<AppModules>()
       // Validates there is no middleware before registering sitka
@@ -95,13 +104,19 @@ describe("Sitka Register Method", () => {
       sitka.register([colorModule])
       const sitkaMeta: any = sitka.createSitkaMeta()
       const expectedSagas = [
-        { handler: colorModule.handlerOriginalFunctionMap.get(colorModule.handleColor).fn, name: "MODULE_COLOR_HANDLECOLOR" },
-        { handler: colorModule.handlerOriginalFunctionMap.get(colorModule.handleReset).fn, name: "MODULE_COLOR_HANDLERESET" }
+        {
+          handler: colorModule.handlerOriginalFunctionMap.get(colorModule.handleColor).fn,
+          name: 'MODULE_COLOR_HANDLECOLOR',
+        },
+        {
+          handler: colorModule.handlerOriginalFunctionMap.get(colorModule.handleReset).fn,
+          name: 'MODULE_COLOR_HANDLERESET',
+        },
       ]
       const actualSagas = sitkaMeta.defaultState.__sitka__.sagas
       expect(actualSagas).toEqual(expectedSagas)
     })
-    test("Test and see if forks were added when registered module has them in provideForks", () => {
+    test('Test and see if forks were added when registered module has them in provideForks', () => {
       const sitka = new Sitka<AppModules>()
       // Validate that sitka starts with no forks
       const preChangeMeta: any = sitka.createSitkaMeta()
@@ -110,7 +125,7 @@ describe("Sitka Register Method", () => {
       // Validate that registering modules adds forks and that running the fork from inside sitka is possible
       const textModule = new TextModule()
       const colorModule = new ColorModule()
-      const genericFork = jest.spyOn(textModule, 'genericFork');
+      const genericFork = jest.spyOn(textModule, 'genericFork')
       sitka.register([colorModule, textModule])
       const sitkaMeta: any = sitka.createSitkaMeta()
       const actual = sitkaMeta.defaultState.__sitka__.forks
@@ -120,4 +135,3 @@ describe("Sitka Register Method", () => {
     })
   })
 })
-

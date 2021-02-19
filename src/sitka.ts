@@ -176,6 +176,7 @@ export class Sitka<MODULES = {}> {
     this.createStore = this.createStore.bind(this)
     this.createRoot = this.createRoot.bind(this)
     this.registeredModules = {} as MODULES
+    console.log()
   }
 
   public setDispatch(dispatch: Dispatch): void {
@@ -258,17 +259,9 @@ export class Sitka<MODULES = {}> {
   public register<SITKA_MODULE extends SitkaModule<ModuleState, MODULES>>(instances: SITKA_MODULE[]): void {
     instances.forEach(instance => {
       const { moduleName } = instance
-      const { middlewareToAdd, sagas, forks, reducersToCombine, doDispatch: dispatch } = this
+      const { sagas, reducersToCombine, doDispatch: dispatch } = this
 
-      instance.modules = this.getModules()
-      instance.handlerOriginalFunctionMap = this.handlerOriginalFunctionMap
-
-      middlewareToAdd.push(...instance.provideMiddleware())
-
-      instance.provideForks().forEach(f => {
-        forks.push(f.bind(instance))
-      })
-      this.patchFunctions(instance, sagas, dispatch)
+      patchFunctions({ sitka: this, module: instance, sagas, dispatch })
 
       if (instance.defaultState !== undefined) {
         // create reducer
@@ -310,8 +303,6 @@ export class Sitka<MODULES = {}> {
           return newState
         }
       }
-
-      this.registeredModules[moduleName] = instance
     })
 
     // do subscribers after all has been registered
@@ -319,64 +310,6 @@ export class Sitka<MODULES = {}> {
       const { sagas } = this
       const subscribers = instance.provideSubscriptions()
       sagas.push(...subscribers)
-    })
-  }
-
-  private patchFunctions(module: any, sagas: any, dispatch: any) {
-    const stop = Object.prototype
-
-    const crawlParents = (module: any) => {
-      // TODO Possible refactor to use class name
-      // const moduleName = module.constructor.name
-      const { moduleName } = module
-      let proto = Object.getPrototypeOf(module)
-      // patch function
-      if (proto !== stop) {
-        Object.getOwnPropertyNames(proto).forEach(name => {
-          if (name !== 'constructor') {
-            if (hasMethod(proto, name)) {
-              if (name.indexOf('handle') === 0) {
-                this.patchFunction(module, moduleName, name, sagas, dispatch)
-              }
-            }
-          }
-        })
-        // go to next level for more patching
-        crawlParents(proto)
-      }
-    }
-    crawlParents(module)
-  }
-
-  private patchFunction(module: any, moduleName: any, name: string, sagas: any, dispatch: any) {
-    // check if the function is a handle
-    const original: Function = module[name] // tslint:disable:no-any
-    const handlerKey = createHandlerKey(moduleName, name)
-
-    // this is the patched callback function wrapper
-    function patched(): void {
-      const args = arguments
-      const action: SitkaAction = {
-        _args: args,
-        _moduleId: moduleName,
-        type: handlerKey,
-      }
-
-      dispatch(action)
-    }
-    // add our patched function to the saga handler
-    sagas.push({
-      handler: original,
-      name: handlerKey,
-    })
-
-    // patch the function in the module
-    module[name] = patched
-
-    this.handlerOriginalFunctionMap.set(patched, {
-      handlerKey,
-      fn: original,
-      context: module,
     })
   }
 
@@ -484,4 +417,89 @@ export const createAppStore = (options: StoreOptions): Store => {
 const hasMethod = (obj: {}, name: string) => {
   const desc = Object.getOwnPropertyDescriptor(obj, name)
   return !!desc && typeof desc.value === 'function'
+}
+
+interface PatchMeta<MODULES> {
+  readonly sitka: Sitka
+  readonly module: SitkaModule<ModuleState, MODULES>
+  readonly sagas: Array<SagaMeta>
+  readonly dispatch: (action: Action<any>) => void
+  readonly name?: string
+  readonly handlerKey?: string
+  readonly moduleName?: string
+}
+
+const patchFunctions = <MODULES>(meta: PatchMeta<MODULES>) => {
+  const { sitka, module } = meta
+  let patchedFunctions: Set<string> = new Set()
+
+  const crawlParents = (module: any) => {
+    let proto = Object.getPrototypeOf(module)
+    // patch module
+    patchModule(sitka, proto)
+    // patch function
+    Object.getOwnPropertyNames(proto).forEach(functionName => {
+      if (functionName !== 'constructor' && functionName !== 'handlerOriginalFunctionMap') {
+        if (hasMethod(proto, functionName)) {
+          // function starts with "handle"
+          const moduleName = proto.constructor.name
+          const handlerKey = createHandlerKey(moduleName, functionName)
+          if (functionName.indexOf('handle') === 0 && !patchedFunctions.has(handlerKey)) {
+            patchFunction({ ...meta, moduleName, handlerKey })
+            patchedFunctions.add(handlerKey)
+          }
+        }
+      }
+    })
+    // go to next level for more patching
+    if (Object.getPrototypeOf(proto).constructor.name !== 'SitkaModule') {
+      crawlParents(proto)
+    }
+  }
+  crawlParents(module)
+}
+
+const patchModule = (sitka: any, module: any) => {
+  const moduleName = module.constructor.name
+  if (!sitka.registeredModules[moduleName]) {
+    module.modules = sitka.getModules()
+    module.handlerOriginalFunctionMap = sitka.handlerOriginalFunctionMap
+    sitka.middlewareToAdd.push(...module.provideMiddleware())
+    module.provideForks().forEach(f => {
+      sitka.forks.push(f.bind(module))
+    })
+    sitka.registeredModules[moduleName] = module
+  }
+}
+
+const patchFunction = <MODULES>({ module, name, sagas, handlerKey, dispatch }: PatchMeta<MODULES>) => {
+  const moduleName = module.constructor.name
+  const original: Function = module[name] // tslint:disable:no-any
+
+  // this is the patched callback function wrapper
+  function patched(): void {
+    const args = arguments
+    const action: SitkaAction = {
+      _args: args,
+      _moduleId: moduleName,
+      type: handlerKey,
+    }
+
+    dispatch(action)
+  }
+  // add our patched function to the saga handler
+  sagas.push({
+    handler: original,
+    name: handlerKey,
+  })
+
+  // patch the function in the module
+  module[name] = patched
+
+  module.handlerOriginalFunctionMap.set(patched, {
+    handlerKey,
+    fn: original,
+    context: module,
+  })
+  return handlerKey
 }

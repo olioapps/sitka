@@ -176,7 +176,6 @@ export class Sitka<MODULES = {}> {
     this.createStore = this.createStore.bind(this)
     this.createRoot = this.createRoot.bind(this)
     this.registeredModules = {} as MODULES
-    console.log()
   }
 
   public setDispatch(dispatch: Dispatch): void {
@@ -259,9 +258,10 @@ export class Sitka<MODULES = {}> {
   public register<SITKA_MODULE extends SitkaModule<ModuleState, MODULES>>(instances: SITKA_MODULE[]): void {
     instances.forEach(instance => {
       const { moduleName } = instance
-      const { sagas, reducersToCombine, doDispatch: dispatch } = this
+      const { middlewareToAdd, sagas, forks, reducersToCombine, doDispatch: dispatch } = this
 
-      patchFunctions({ sitka: this, module: instance, sagas, dispatch })
+      this.patchModule.call(this, instance)
+      this.patchFunctions.call(this, instance)
 
       if (instance.defaultState !== undefined) {
         // create reducer
@@ -303,6 +303,8 @@ export class Sitka<MODULES = {}> {
           return newState
         }
       }
+
+      // this.registeredModules[moduleName] = instance
     })
 
     // do subscribers after all has been registered
@@ -311,6 +313,81 @@ export class Sitka<MODULES = {}> {
       const subscribers = instance.provideSubscriptions()
       sagas.push(...subscribers)
     })
+  }
+
+  // recursion, function map of patched methods to exclude
+  // middleware and forks are added for each added module
+  // only register added module
+  // sagas are created with function name and modules name from registering module
+  // handlerOriginalFunctionMap is only on the registering module
+  // module name is pulled from the moduleName attribute
+
+  patchModule<SITKA_MODULE extends SitkaModule<ModuleState, MODULES>>(module: SITKA_MODULE): void {
+    const moduleName = module.constructor.name
+    module.modules = this.getModules()
+    module.handlerOriginalFunctionMap = this.handlerOriginalFunctionMap
+    this.middlewareToAdd.push(...module.provideMiddleware())
+    module.provideForks().forEach(f => {
+      this.forks.push(f.bind(module))
+    })
+    this.registeredModules[moduleName] = module
+  }
+
+  patchFunctions<SITKA_MODULE extends SitkaModule<ModuleState, MODULES>>(module: SITKA_MODULE): void {
+    let patchedFunctions: Set<string> = new Set()
+    const { moduleName } = module
+
+    const crawlParents = (child: SITKA_MODULE) => {
+      let parent = Object.getPrototypeOf(child)
+      // Have we hit the object base class?
+      if (Object.getPrototypeOf(parent) != Object.prototype) {
+        Object.getOwnPropertyNames(parent).forEach(functionName => {
+          if (functionName !== 'constructor') {
+            if (hasMethod(parent, functionName)) {
+              // function starts with "handle"
+              const handlerKey = createHandlerKey(moduleName, functionName)
+              if (functionName.indexOf('handle') === 0 && !patchedFunctions.has(handlerKey)) {
+                patchFunction.call(this, parent, handlerKey, functionName)
+                patchedFunctions.add(handlerKey)
+              }
+            }
+          }
+        })
+        crawlParents.call(this, parent)
+      }
+    }
+
+    const patchFunction = (parent: any, handlerKey: string, functionName: string) => {
+      // this is the patched callback function wrapper
+      function patched(): void {
+        const args = arguments
+        const action: SitkaAction = {
+          _args: args,
+          _moduleId: moduleName,
+          type: handlerKey,
+        }
+        this.dispatch(action)
+      }
+
+      const original: Function = parent[functionName] // tslint:disable:no-any
+
+      // add our patched function to the saga handler
+      this.sagas.push({
+        handler: original.bind(module),
+        name: handlerKey,
+      })
+
+      // patch the function in the module
+      parent[functionName] = patched.bind(this)
+
+      module.handlerOriginalFunctionMap.set(patched, {
+        handlerKey,
+        fn: original,
+        context: module,
+      })
+    }
+
+    crawlParents.call(this, module)
   }
 
   private getDefaultState(): {} {
@@ -417,89 +494,4 @@ export const createAppStore = (options: StoreOptions): Store => {
 const hasMethod = (obj: {}, name: string) => {
   const desc = Object.getOwnPropertyDescriptor(obj, name)
   return !!desc && typeof desc.value === 'function'
-}
-
-interface PatchMeta<MODULES> {
-  readonly sitka: Sitka
-  readonly module: SitkaModule<ModuleState, MODULES>
-  readonly sagas: Array<SagaMeta>
-  readonly dispatch: (action: Action<any>) => void
-  readonly name?: string
-  readonly handlerKey?: string
-  readonly moduleName?: string
-}
-
-const patchFunctions = <MODULES>(meta: PatchMeta<MODULES>) => {
-  const { sitka, module } = meta
-  let patchedFunctions: Set<string> = new Set()
-
-  const crawlParents = (module: any) => {
-    let proto = Object.getPrototypeOf(module)
-    // patch module
-    patchModule(sitka, proto)
-    // patch function
-    Object.getOwnPropertyNames(proto).forEach(functionName => {
-      if (functionName !== 'constructor' && functionName !== 'handlerOriginalFunctionMap') {
-        if (hasMethod(proto, functionName)) {
-          // function starts with "handle"
-          const moduleName = proto.constructor.name
-          const handlerKey = createHandlerKey(moduleName, functionName)
-          if (functionName.indexOf('handle') === 0 && !patchedFunctions.has(handlerKey)) {
-            patchFunction({ ...meta, moduleName, handlerKey })
-            patchedFunctions.add(handlerKey)
-          }
-        }
-      }
-    })
-    // go to next level for more patching
-    if (Object.getPrototypeOf(proto).constructor.name !== 'SitkaModule') {
-      crawlParents(proto)
-    }
-  }
-  crawlParents(module)
-}
-
-const patchModule = (sitka: any, module: any) => {
-  const moduleName = module.constructor.name
-  if (!sitka.registeredModules[moduleName]) {
-    module.modules = sitka.getModules()
-    module.handlerOriginalFunctionMap = sitka.handlerOriginalFunctionMap
-    sitka.middlewareToAdd.push(...module.provideMiddleware())
-    module.provideForks().forEach(f => {
-      sitka.forks.push(f.bind(module))
-    })
-    sitka.registeredModules[moduleName] = module
-  }
-}
-
-const patchFunction = <MODULES>({ module, name, sagas, handlerKey, dispatch }: PatchMeta<MODULES>) => {
-  const moduleName = module.constructor.name
-  const original: Function = module[name] // tslint:disable:no-any
-
-  // this is the patched callback function wrapper
-  function patched(): void {
-    const args = arguments
-    const action: SitkaAction = {
-      _args: args,
-      _moduleId: moduleName,
-      type: handlerKey,
-    }
-
-    dispatch(action)
-  }
-  // add our patched function to the saga handler
-  sagas.push({
-    handler: original,
-    name: handlerKey,
-  })
-
-  // patch the function in the module
-  module[name] = patched
-
-  module.handlerOriginalFunctionMap.set(patched, {
-    handlerKey,
-    fn: original,
-    context: module,
-  })
-  return handlerKey
 }

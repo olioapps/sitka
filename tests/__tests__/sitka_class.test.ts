@@ -4,12 +4,13 @@ import { Sitka, SitkaModule } from '../../src/sitka'
 import { Store } from 'redux'
 
 interface AppModules {
-  readonly extended_color: SecondExtendedModule
+  readonly SecondExtendedModule: SecondExtendedModule
 }
 
+// Base class
 abstract class ColorModule extends SitkaModule<ColorState, AppModules> {
-  public moduleName: string = 'color'
-  public defaultState: ColorState = null
+  public moduleName: string = 'Color_Module'
+  public defaultState: ColorState = ''
 
   public *handleColor(color: string): IterableIterator<{}> {
     yield put(this.setState(color))
@@ -19,10 +20,16 @@ abstract class ColorModule extends SitkaModule<ColorState, AppModules> {
   }
 }
 
-abstract class ExtendedModule extends ColorModule {}
+// 1st child
+abstract class ExtendedModule extends ColorModule {
+  public moduleName: string = 'Extended_Module'
+  public defaultState: ColorState = ''
+}
 
+// 2nd child
 class SecondExtendedModule extends ExtendedModule {
-  public moduleName: string = 'extended_color'
+  public moduleName: string = 'Second_Extended_Module'
+  public defaultState: ColorState = ''
   public *handleColor(color: string): IterableIterator<{}> {
     yield super.handleColor(color)
     yield put(this.setState(color))
@@ -35,8 +42,11 @@ describe('SitkaClassInheritance', () => {
     sitka.register([new SecondExtendedModule()])
     const store: Store = sitka.createStore() as Store
 
-    const { extended_color } = sitka.getModules()
-    extended_color.handleColor('newColor')
+    const { SecondExtendedModule: module } = sitka.getModules()
+
+    module.handleColor('newColor')
+    module.handleReset()
+
     // TODO add test for class inheritance
   })
 })

@@ -4,7 +4,7 @@ import { Sitka, SitkaModule } from '../../src/sitka'
 import { Store } from 'redux'
 
 interface AppModules {
-  readonly SecondExtendedModule: SecondExtendedModule
+  readonly Second_Extended_Module: SecondExtendedModule
 }
 
 // Base class
@@ -42,7 +42,7 @@ describe('SitkaClassInheritance', () => {
     sitka.register([new SecondExtendedModule()])
     const store: Store = sitka.createStore() as Store
 
-    const { SecondExtendedModule: module } = sitka.getModules()
+    const { Second_Extended_Module: module } = sitka.getModules()
 
     module.handleColor('newColor')
     module.handleReset()

@@ -315,15 +315,9 @@ export class Sitka<MODULES = {}> {
     })
   }
 
-  // recursion, function map of patched methods to exclude
-  // middleware and forks are added for each added module
-  // only register added module
-  // sagas are created with function name and modules name from registering module
-  // handlerOriginalFunctionMap is only on the registering module
-  // module name is pulled from the moduleName attribute
-
   patchModule<SITKA_MODULE extends SitkaModule<ModuleState, MODULES>>(module: SITKA_MODULE): void {
-    const moduleName = module.constructor.name
+    // TODO Check if name has already been registered, if so throw an error
+    const moduleName = module.moduleName
     module.modules = this.getModules()
     module.handlerOriginalFunctionMap = this.handlerOriginalFunctionMap
     this.middlewareToAdd.push(...module.provideMiddleware())

@@ -37,39 +37,22 @@ const defaultSitkaFactoryConfig = {
   doTrackHistory: false,
   doExcludeStandardTestModules: false,
   additionalModules: [],
- }
+}
 
 export const sitkaFactory = (config: FactoryConfig = {}) => {
   const composedConfig: FactoryConfig = {
     ...defaultSitkaFactoryConfig,
-    ...config
+    ...config,
   }
 
-  const {
-    doLogging,
-    doTrackHistory,
-    doExcludeStandardTestModules,
-    additionalModules
-  } = composedConfig
+  const { doLogging, doTrackHistory, doExcludeStandardTestModules, additionalModules } = composedConfig
 
   const sitka = new Sitka<AppModules>({
     log: doLogging,
   })
-  const standardTestModules = doExcludeStandardTestModules
-    ? []
-    : [
-      new ColorModule(),
-      new TextModule(),
-    ]
-  const modulesToUse = [
-    ...standardTestModules,
-    ...additionalModules,
-  ]
-  sitka.register(
-    doTrackHistory
-      ? [ new LoggingModule(), ...modulesToUse]
-      : modulesToUse
-  )
+  const standardTestModules = doExcludeStandardTestModules ? [] : [new ColorModule(), new TextModule()]
+  const modulesToUse = [...standardTestModules, ...additionalModules]
+  sitka.register(doTrackHistory ? [new LoggingModule(), ...modulesToUse] : modulesToUse)
 
   return sitka
 }

@@ -1,9 +1,5 @@
 import { ColorModule } from "../color_module"
-import {
-  sitkaFactory,
-  createSitkaAndStore,
-  AppState
-} from "../sitka-test"
+import { sitkaFactory, createSitkaAndStore, AppState } from "../sitka-test"
 import { defaultTextModuleState, TextModule } from "../text_module"
 import rewire from "rewire"
 const sitkaRewired = rewire("../../dist/sitka")
@@ -98,7 +94,7 @@ describe("SitkaModule", () => {
   })
 
   // FORKS
-  test("provideForks adds fork to Sitka", (done) => {
+  test("provideForks adds fork to Sitka", done => {
     const mockSitka = new sitkaRewired.Sitka()
     const sitka = sitkaFactory()
     const { text: textModule } = sitka.getModules()
@@ -116,7 +112,7 @@ describe("SitkaModule", () => {
     expect(mockSitka.forks.length).toEqual(1)
   })
 
-/*
+  /*
   MIDDLEWARE
 
   Testing Notes:
@@ -124,43 +120,42 @@ describe("SitkaModule", () => {
   tests themselves will still pass.
  */
 
- describe("provideMiddleware adds middleware to Sitka", () => {
+  describe("provideMiddleware adds middleware to Sitka", () => {
+    test("middleware provided from a sitka module adds middleware to Sitka", () => {
+      // Validates middleware doesn"t exist if sitka is registered without
+      const sitkaNoMiddleware = sitkaFactory()
+      const sitkaNoMiddlewareMeta = sitkaNoMiddleware.createSitkaMeta()
 
-  test("middleware provided from a sitka module adds middleware to Sitka", () => {
-    // Validates middleware doesn"t exist if sitka is registered without
-    const sitkaNoMiddleware = sitkaFactory()
-    const sitkaNoMiddlewareMeta = sitkaNoMiddleware.createSitkaMeta()
+      expect(sitkaNoMiddlewareMeta.middleware).toEqual([])
+      // Validates middleware does exist when module with middleware is registered
+      const sitka = sitkaFactory({ doTrackHistory: true })
+      // get the middleware object from sitka
+      const actual = sitka.createSitkaMeta().middleware[0]
+      // compare sitka middleware to the provider module middleware
 
-    expect(sitkaNoMiddlewareMeta.middleware).toEqual([])
-    // Validates middleware does exist when module with middleware is registered
-    const sitka = sitkaFactory({ doTrackHistory: true })
-    // get the middleware object from sitka
-    const actual = sitka.createSitkaMeta().middleware[0]
-    // compare sitka middleware to the provider module middleware
+      expect(actual).toEqual(sitka.getModules().logging.historyMiddleware)
+    })
 
-    expect(actual).toEqual(sitka.getModules().logging.historyMiddleware)
-  })
+    test("providedMiddleware adds middleware to a log enabled Sitka instance", () => {
+      const sitkaWithLogger = sitkaFactory({ doLogging: true, doTrackHistory: true })
+      const { logging: loggingModule } = sitkaWithLogger.getModules()
+      // there are two middlewares - one provided by textModule, and the logger.
+      const actualMiddlewareLength = sitkaWithLogger.createSitkaMeta().middleware.length
+      expect(actualMiddlewareLength).toEqual(2)
+      // the logger middleware will always be appended to the end of the middleware array
+      // checking that the first is the provided middleware
+      const actualProvidedMiddleware = sitkaWithLogger.createSitkaMeta().middleware[0]
+      expect(actualProvidedMiddleware).toEqual(loggingModule.historyMiddleware)
+    })
 
-  test("providedMiddleware adds middleware to a log enabled Sitka instance", () => {
-    const sitkaWithLogger = sitkaFactory({ doLogging: true, doTrackHistory: true })
-    const { logging: loggingModule } = sitkaWithLogger.getModules()
-    // there are two middlewares - one provided by textModule, and the logger.
-    const actualMiddlewareLength = sitkaWithLogger.createSitkaMeta().middleware.length
-    expect(actualMiddlewareLength).toEqual(2)
-    // the logger middleware will always be appended to the end of the middleware array
-    // checking that the first is the provided middleware
-    const actualProvidedMiddleware = sitkaWithLogger.createSitkaMeta().middleware[0]
-    expect(actualProvidedMiddleware).toEqual(loggingModule.historyMiddleware)
-  })
-
-   test("no provided middleware and no logger results in no Sitka middleware", () => {
+    test("no provided middleware and no logger results in no Sitka middleware", () => {
       const sitkaNoMiddleware = sitkaFactory()
       const actual = sitkaNoMiddleware.createSitkaMeta().middleware.length
       expect(actual).toEqual(0)
-   })
- })
+    })
+  })
 
-//   // CALL AS GENERATOR
-//   test("callAsGenerator adds middleware to Sitka", () => {
-//   })
+  //   // CALL AS GENERATOR
+  //   test("callAsGenerator adds middleware to Sitka", () => {
+  //   })
 })

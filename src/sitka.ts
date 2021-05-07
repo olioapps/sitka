@@ -10,11 +10,11 @@ import {
   Store,
   StoreEnhancer,
   compose,
-} from 'redux'
-import { createLogger } from 'redux-logger'
-import { SagaMiddleware } from 'redux-saga'
-import createSagaMiddleware from 'redux-saga'
-import { all, apply, select, put, takeEvery, take, fork, ForkEffect, CallEffectFn } from 'redux-saga/effects'
+} from "redux"
+import { createLogger } from "redux-logger"
+import { SagaMiddleware } from "redux-saga"
+import createSagaMiddleware from "redux-saga"
+import { all, apply, select, put, takeEvery, take, fork, ForkEffect, CallEffectFn } from "redux-saga/effects"
 
 interface PayloadAction extends Action {
   readonly payload?: {}
@@ -56,7 +56,7 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
       return { type, [type]: v }
     }
 
-    if (typeof v !== 'object') {
+    if (typeof v !== "object") {
       return { type, [type]: v }
     } else {
       if (usePayload) {
@@ -89,7 +89,7 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
 
   // can be either the action type string, or the module function to watch
   protected createSubscription(actionTarget: string | Function, handler: CallEffectFn<any>): SagaMeta {
-    if (typeof actionTarget === 'string') {
+    if (typeof actionTarget === "string") {
       return {
         name: actionTarget,
         handler,
@@ -282,14 +282,14 @@ export class Sitka<MODULES = {}> {
           }
 
           const newState: ModuleState = Object.keys(action)
-            .filter(k => k !== 'type')
+            .filter(k => k !== "type")
             .reduce((acc, k) => {
               const val = action[k]
               if (k === type) {
                 return val
               }
 
-              if (val === null || typeof val === 'undefined') {
+              if (val === null || typeof val === "undefined") {
                 return Object.assign(acc, {
                   [k]: null,
                 })
@@ -357,11 +357,11 @@ export class Sitka<MODULES = {}> {
       // Have we hit the object base class?
       if (Object.getPrototypeOf(parent) != Object.prototype) {
         Object.getOwnPropertyNames(parent).forEach(functionName => {
-          if (functionName !== 'constructor') {
+          if (functionName !== "constructor") {
             if (hasMethod(parent, functionName)) {
               // function starts with "handle"
               const handlerKey = createHandlerKey(moduleName, functionName)
-              if (functionName.indexOf('handle') === 0 && !patchedFunctions.has(handlerKey)) {
+              if (functionName.indexOf("handle") === 0 && !patchedFunctions.has(handlerKey)) {
                 patchFunction(sitka, parent, handlerKey, functionName)
                 patchedFunctions.add(handlerKey)
               }
@@ -460,7 +460,7 @@ export class Sitka<MODULES = {}> {
     if (!!dispatch) {
       dispatch(action)
     } else {
-      alert('no dispatch')
+      alert("no dispatch")
     }
   }
 }
@@ -508,5 +508,5 @@ export const createAppStore = (options: StoreOptions): Store => {
 
 const hasMethod = (obj: {}, name: string) => {
   const desc = Object.getOwnPropertyDescriptor(obj, name)
-  return !!desc && typeof desc.value === 'function'
+  return !!desc && typeof desc.value === "function"
 }

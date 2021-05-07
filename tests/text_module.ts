@@ -1,7 +1,7 @@
-import { put } from 'Redux-saga/effects'
-import { SagaMeta, SitkaModule } from '../src/sitka'
-import { AppModules } from './sitka-test'
-import { select, call } from 'redux-saga/effects'
+import { put } from "Redux-saga/effects"
+import { SagaMeta, SitkaModule } from "../src/sitka"
+import { AppModules } from "./sitka-test"
+import { select, call } from "redux-saga/effects"
 
 export type TextState = {
   size: number
@@ -11,12 +11,12 @@ export type TextState = {
 
 export const defaultTextModuleState = {
   size: 12,
-  value: 'Hello World',
+  value: "Hello World",
   numberOfEdits: 0,
 }
 
 export class TextModule extends SitkaModule<TextState, AppModules> {
-  public moduleName: string = 'text'
+  public moduleName: string = "text"
   public defaultState: TextState = defaultTextModuleState
 
   public TextModule() {

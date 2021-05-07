@@ -8,22 +8,22 @@ describe("Sitka Util Functions", () => {
   test(`createAppStore returns Redux store`, () => {
     const sitka = sitkaFactory()
     const meta = sitka.createSitkaMeta()
-    const store = createAppStore(
-      {
-        initialState: meta.defaultState,
-        reducersToCombine: [meta.reducersToCombine],
-        middleware: meta.middleware,
-        sagaRoot: meta.sagaRoot,
-        log: false,
-      }
-      )
-      expect(store).toEqual(expect.objectContaining({
+    const store = createAppStore({
+      initialState: meta.defaultState,
+      reducersToCombine: [meta.reducersToCombine],
+      middleware: meta.middleware,
+      sagaRoot: meta.sagaRoot,
+      log: false,
+    })
+    expect(store).toEqual(
+      expect.objectContaining({
         dispatch: expect.any(Function),
         getState: expect.any(Function),
         replaceReducer: expect.any(Function),
         subscribe: expect.any(Function),
-      }))
-      expect(store.getState() === meta.defaultState).toBeTruthy()
+      })
+    )
+    expect(store.getState() === meta.defaultState).toBeTruthy()
   })
 
   describe(`hasMethod tests`, () => {
@@ -53,10 +53,7 @@ describe("Sitka Util Functions", () => {
         mergeState: () => {},
         handleFunction: () => {},
       }
-      const names = [
-        "mergeState",
-        "handleFunction"
-      ]
+      const names = ["mergeState", "handleFunction"]
       const mockModuleObj = Object.create(mockModule)
       const methodNames = getInstanceMethodNames(mockModuleObj, Object.prototype)
       expect(methodNames).toEqual(names)

@@ -322,7 +322,18 @@ export class Sitka<MODULES = {}> {
     const moduleName = module.moduleName
     module.modules = sitka.getModules()
     module.handlerOriginalFunctionMap = sitka.handlerOriginalFunctionMap
-    sitka.middlewareToAdd.push(...module.provideMiddleware())
+
+    const addedMiddleware = sitka.middlewareToAdd.reduce((acc, mw) => [...acc, mw.toString()], [])
+    // middleware names must be unique or they are omitted
+    module.provideMiddleware().forEach(mw => {
+      // if the middleware has already been added don't add it again
+      if (addedMiddleware.includes(mw.toString())) {
+        return
+      }
+      addedMiddleware.push(mw.toString())
+      sitka.middlewareToAdd.push(mw)
+    })
+
     module.provideForks().forEach(f => {
       sitka.forks.push(f.bind(module))
     })

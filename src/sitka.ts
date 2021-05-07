@@ -19,7 +19,13 @@ import { all, apply, select, put, takeEvery, take, fork, ForkEffect, CallEffectF
 interface PayloadAction extends Action {
   readonly payload?: {}
 }
-export type SitkaModuleAction<T> = (Partial<T> & { type: string; payload?: {} }) | Action
+
+interface SitkaModuleActionPayload {
+  readonly payload?: {}
+  readonly type: string
+}
+
+export type SitkaModuleAction<T> = (Partial<T> & SitkaModuleActionPayload) | Action
 
 type ModuleState = {} | undefined | null
 

@@ -1,15 +1,15 @@
-import { Dispatch } from 'redux'
-import { AppModules, createSitkaAndStore, sitkaFactory } from '../sitka-test'
-import { createAppStore, Sitka } from '../../src/sitka'
-import { TextModule } from '../text_module'
-import { ColorModule } from '../color_module'
+import { Dispatch } from "redux"
+import { AppModules, createSitkaAndStore, sitkaFactory } from "../sitka-test"
+import { createAppStore, Sitka } from "../../src/sitka"
+import { TextModule } from "../text_module"
+import { ColorModule } from "../color_module"
 
 export class SitkaMock<T = {}> extends Sitka {
   public registeredModules: T
 }
 
-describe('Sitka', () => {
-  describe('setDispatch', () => {
+describe("Sitka", () => {
+  describe("setDispatch", () => {
     test(`setDispatch dispatch was called`, () => {
       const { sitka, store } = createSitkaAndStore()
       let wasMockDispatched: boolean
@@ -27,7 +27,7 @@ describe('Sitka', () => {
     })
   })
 
-  describe('getModules', () => {
+  describe("getModules", () => {
     test(`getModules returns registered modules`, () => {
       const textModule = new TextModule()
       const colorModule = new ColorModule()
@@ -46,8 +46,8 @@ describe('Sitka', () => {
     })
   })
 
-  describe('createSitkaMeta', () => {
-    test('createSitkaMeta returns expected default meta value', () => {
+  describe("createSitkaMeta", () => {
+    test("createSitkaMeta returns expected default meta value", () => {
       // todo: refac -- should only be looking at public
       // const sitka = sitkaFactory({doExcludeStandardTestModules: true})
       const sitka = new Sitka<AppModules>()
@@ -82,43 +82,43 @@ describe('Sitka', () => {
       const expectedDefaultState = {
         logging: { history: [] },
         color: null,
-        text: { size: 12, value: 'Hello World', numberOfEdits: 0 },
+        text: { size: 12, value: "Hello World", numberOfEdits: 0 },
       }
 
       expect(actual.defaultState).toMatchObject(expectedDefaultState)
 
       // reducers to combine
-      expect(actual.reducersToCombine).toHaveProperty('color')
-      expect(typeof actual.reducersToCombine.color).toBe('function')
+      expect(actual.reducersToCombine).toHaveProperty("color")
+      expect(typeof actual.reducersToCombine.color).toBe("function")
 
-      expect(actual.reducersToCombine).toHaveProperty('logging')
-      expect(typeof actual.reducersToCombine.logging).toBe('function')
+      expect(actual.reducersToCombine).toHaveProperty("logging")
+      expect(typeof actual.reducersToCombine.logging).toBe("function")
 
-      expect(actual.reducersToCombine).toHaveProperty('text')
-      expect(typeof actual.reducersToCombine.text).toBe('function')
+      expect(actual.reducersToCombine).toHaveProperty("text")
+      expect(typeof actual.reducersToCombine.text).toBe("function")
 
       // middlewareToAdd
-      expect(typeof actual.middleware[0]).toBe('function')
+      expect(typeof actual.middleware[0]).toBe("function")
 
       // sagaRoot -- assume that sagaRoot is accurate if it's return includes the expected 'value' prop
-      expect(typeof actual.sagaRoot).toBe('function')
+      expect(typeof actual.sagaRoot).toBe("function")
 
       expect(actual.sagaRoot().next()).toMatchObject({
         value: {
-          '@@redux-saga/IO': true,
+          "@@redux-saga/IO": true,
         },
       })
 
       // sagaProvider -- assume that sagaProvider is accurate if it has the 'middleware' and 'activate' props
-      expect(typeof actual.sagaProvider).toBe('function')
-      expect(actual.sagaProvider()).toHaveProperty('middleware')
-      expect(actual.sagaProvider()).toHaveProperty('activate')
+      expect(typeof actual.sagaProvider).toBe("function")
+      expect(actual.sagaProvider()).toHaveProperty("middleware")
+      expect(actual.sagaProvider()).toHaveProperty("activate")
 
       // todo: bind createSitkaMeta to a store that we control and run things on that store.
     })
   })
 
-  describe('createStore', () => {
+  describe("createStore", () => {
     test(`createStore returns redux Store with appstoreCreator`, () => {
       const sitkaMock = new SitkaMock<string>()
       const customAppStoreCreator = meta => {

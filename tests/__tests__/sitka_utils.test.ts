@@ -1,10 +1,10 @@
-import { sitkaFactory } from '../sitka-test'
-import { createAppStore } from '../../src/sitka'
-import rewire from 'rewire'
+import { sitkaFactory } from "../sitka-test"
+import { createAppStore } from "../../src/sitka"
+import rewire from "rewire"
 
-const utils = rewire('../../dist/sitka.js')
+const utils = rewire("../../dist/sitka.js")
 
-describe('Sitka Util Functions', () => {
+describe("Sitka Util Functions", () => {
   test(`createAppStore returns Redux store`, () => {
     const sitka = sitkaFactory()
     const meta = sitka.createSitkaMeta()
@@ -29,23 +29,23 @@ describe('Sitka Util Functions', () => {
   describe(`hasMethod tests`, () => {
     const sitka = sitkaFactory()
     const { text: textModule } = sitka.getModules()
-    const hasMethod = utils.__get__('hasMethod')
+    const hasMethod = utils.__get__("hasMethod")
 
     test(`hasMethod returns true when module has method`, () => {
-      const methodExists = hasMethod(textModule, 'handleText')
+      const methodExists = hasMethod(textModule, "handleText")
       expect(methodExists).toBeTruthy()
     })
 
     test(`hasMethod returns false when module does not have method`, () => {
-      const propertyIsNotFunc = hasMethod(textModule, 'defaultState')
+      const propertyIsNotFunc = hasMethod(textModule, "defaultState")
       expect(propertyIsNotFunc).toBeFalsy()
-      const noMethodExists = hasMethod(textModule, 'nothingExistsByThisName')
+      const noMethodExists = hasMethod(textModule, "nothingExistsByThisName")
       expect(noMethodExists).toBeFalsy()
     })
   })
 
   describe(`getInstanceMethodNames tests`, () => {
-    const getInstanceMethodNames = utils.__get__('getInstanceMethodNames')
+    const getInstanceMethodNames = utils.__get__("getInstanceMethodNames")
 
     test(`getInstanceMethodNames returns array of method names`, () => {
       const mockModule = {
@@ -53,7 +53,7 @@ describe('Sitka Util Functions', () => {
         mergeState: () => {},
         handleFunction: () => {},
       }
-      const names = ['mergeState', 'handleFunction']
+      const names = ["mergeState", "handleFunction"]
       const mockModuleObj = Object.create(mockModule)
       const methodNames = getInstanceMethodNames(mockModuleObj, Object.prototype)
       expect(methodNames).toEqual(names)
@@ -63,7 +63,7 @@ describe('Sitka Util Functions', () => {
   describe(`createStateChangeKey tests`, () => {
     const sitka = sitkaFactory()
     const { text: textModule } = sitka.getModules()
-    const createStateChangeKey = utils.__get__('createStateChangeKey')
+    const createStateChangeKey = utils.__get__("createStateChangeKey")
 
     test(`createStateChangeKey returns uppercase state change action type string`, () => {
       const stateChangeKey = createStateChangeKey(textModule.moduleName)
@@ -74,10 +74,10 @@ describe('Sitka Util Functions', () => {
   describe(`createHandlerKey tests`, () => {
     const sitka = sitkaFactory()
     const { text: textModule } = sitka.getModules()
-    const createHandlerKey = utils.__get__('createHandlerKey')
+    const createHandlerKey = utils.__get__("createHandlerKey")
 
     test(`createHandlerKey returns uppercase handler action type string`, () => {
-      const handlerKey = createHandlerKey(textModule.moduleName, 'handleText')
+      const handlerKey = createHandlerKey(textModule.moduleName, "handleText")
       expect(handlerKey).toEqual(`MODULE_TEXT_HANDLETEXT`)
     })
   })

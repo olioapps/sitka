@@ -10,16 +10,21 @@ import {
   Store,
   StoreEnhancer,
   compose,
-} from 'redux'
-import { createLogger } from 'redux-logger'
-import { SagaMiddleware } from 'redux-saga'
-import createSagaMiddleware from 'redux-saga'
-import { all, apply, select, put, takeEvery, take, fork, ForkEffect, CallEffectFn } from 'redux-saga/effects'
+} from "redux"
+import { createLogger } from "redux-logger"
+import { SagaMiddleware } from "redux-saga"
+import createSagaMiddleware from "redux-saga"
+import { all, apply, select, put, takeEvery, take, fork, ForkEffect, CallEffectFn } from "redux-saga/effects"
 
 interface PayloadAction extends Action {
   readonly payload?: {}
 }
-export type SitkaModuleAction<T> = (Partial<T> & { type: string; payload?: {} }) | Action
+
+interface SitkaModuleActionType {
+  type: string
+  payload?: {}
+}
+export type SitkaModuleAction<T> = (Partial<T> & SitkaModuleActionType) | Action
 
 type ModuleState = {} | undefined | null
 
@@ -56,7 +61,7 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
       return { type, [type]: null }
     }
 
-    if (typeof v !== 'object') {
+    if (typeof v !== "object") {
       return { type, [type]: v }
     } else {
       if (usePayload) {
@@ -89,7 +94,7 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
 
   // can be either the action type string, or the module function to watch
   protected createSubscription(actionTarget: string | Function, handler: CallEffectFn<any>): SagaMeta {
-    if (typeof actionTarget === 'string') {
+    if (typeof actionTarget === "string") {
       return {
         name: actionTarget,
         handler,
@@ -258,7 +263,7 @@ export class Sitka<MODULES = {}> {
   public register<SITKA_MODULE extends SitkaModule<ModuleState, MODULES>>(instances: SITKA_MODULE[]): void {
     instances.forEach(instance => {
       const methodNames = getInstanceMethodNames(instance, Object.prototype)
-      const handlers = methodNames.filter(m => m.indexOf('handle') === 0)
+      const handlers = methodNames.filter(m => m.indexOf("handle") === 0)
 
       const { moduleName } = instance
       const { middlewareToAdd, sagas, forks, reducersToCombine, doDispatch: dispatch } = this
@@ -321,14 +326,14 @@ export class Sitka<MODULES = {}> {
           }
 
           const newState: ModuleState = Object.keys(action)
-            .filter(k => k !== 'type')
+            .filter(k => k !== "type")
             .reduce((acc, k) => {
               const val = action[k]
               if (k === type) {
                 return val
               }
 
-              if (val === null || typeof val === 'undefined') {
+              if (val === null || typeof val === "undefined") {
                 return Object.assign(acc, {
                   [k]: null,
                 })
@@ -403,7 +408,7 @@ export class Sitka<MODULES = {}> {
     if (!!dispatch) {
       dispatch(action)
     } else {
-      alert('no dispatch')
+      alert("no dispatch")
     }
   }
 }
@@ -451,7 +456,7 @@ export const createAppStore = (options: StoreOptions): Store => {
 
 const hasMethod = (obj: {}, name: string) => {
   const desc = Object.getOwnPropertyDescriptor(obj, name)
-  return !!desc && typeof desc.value === 'function'
+  return !!desc && typeof desc.value === "function"
 }
 
 const getInstanceMethodNames = (obj: {}, stop: {}) => {
@@ -459,7 +464,7 @@ const getInstanceMethodNames = (obj: {}, stop: {}) => {
   let proto = Object.getPrototypeOf(obj)
   while (proto && proto !== stop) {
     Object.getOwnPropertyNames(proto).forEach(name => {
-      if (name !== 'constructor') {
+      if (name !== "constructor") {
         if (hasMethod(proto, name)) {
           array.push(name)
         }

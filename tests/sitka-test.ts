@@ -1,7 +1,7 @@
-import { ColorModule, ColorState } from './color_module'
-import { Sitka } from '../src/sitka'
-import { TextModule, TextState } from './text_module'
-import { LoggingModule, LoggingState } from './logging_module'
+import { ColorModule, ColorState } from "./color_module"
+import { Sitka } from "../src/sitka"
+import { TextModule, TextState } from "./text_module"
+import { LoggingModule, LoggingState } from "./logging_module"
 
 export interface AppModules {
   readonly color: ColorModule

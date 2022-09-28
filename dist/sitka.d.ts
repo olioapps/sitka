@@ -13,7 +13,7 @@ interface GeneratorContext {
 }
 export declare abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
     modules: MODULES;
-    handlerOriginalFunctionMap: Map<string, GeneratorContext>;
+    handlerOriginalFunctionMap: Map<Function, GeneratorContext>;
     abstract moduleName: string;
     constructor();
     reduxKey(): string;
@@ -65,7 +65,6 @@ export declare class Sitka<MODULES = {}> {
     getModules(): MODULES;
     createSitkaMeta(): SitkaMeta;
     createStore(appstoreCreator?: AppStoreCreator): Store<{}> | null;
-    private registerInstance;
     register<SITKA_MODULE extends SitkaModule<ModuleState, MODULES>>(instances: SITKA_MODULE[]): void;
     private getDefaultState;
     private createRoot;

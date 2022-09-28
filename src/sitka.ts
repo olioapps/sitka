@@ -1,20 +1,7 @@
-import {
-  Action,
-  applyMiddleware,
-  combineReducers,
-  createStore,
-  DeepPartial,
-  Dispatch,
-  Middleware,
-  ReducersMapObject,
-  Store,
-  StoreEnhancer,
-  compose,
-} from 'redux'
+import { Action, applyMiddleware, combineReducers, compose, createStore, DeepPartial, Dispatch, Middleware, ReducersMapObject, Store, StoreEnhancer } from 'redux'
 import { createLogger } from 'redux-logger'
-import { SagaMiddleware } from 'redux-saga'
-import createSagaMiddleware from 'redux-saga'
-import { all, apply, select, put, takeEvery, take, fork, ForkEffect, CallEffectFn } from 'redux-saga/effects'
+import createSagaMiddleware, { SagaMiddleware } from 'redux-saga'
+import { all, apply, CallEffectFn, fork, ForkEffect, put, select, takeEvery } from 'redux-saga/effects'
 
 interface PayloadAction extends Action {
   readonly payload?: {}
@@ -34,7 +21,7 @@ interface GeneratorContext {
 
 export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
   public modules: MODULES
-  handlerOriginalFunctionMap = new Map<Function, GeneratorContext>()
+  handlerOriginalFunctionMap = new Map<string, GeneratorContext>()
 
   public abstract moduleName: string
 
@@ -94,13 +81,17 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
         name: actionTarget,
         handler,
         direct: true,
+        moduleId: this.moduleName,
       }
     } else {
-      const generatorContext: GeneratorContext = this.handlerOriginalFunctionMap.get(actionTarget)
+      const functionName = `${actionTarget.name}`
+      // console.log('from', this.moduleName, 'createSubscription.functionName', functionName)
+      const generatorContext: GeneratorContext = this.handlerOriginalFunctionMap.get(functionName)
       return {
         name: generatorContext.handlerKey,
         handler,
         direct: true,
+        moduleId: this.moduleName,
       }
     }
   }
@@ -118,7 +109,8 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
   }
 
   protected *callAsGenerator(fn: Function, ...rest: any[]): {} {
-    const generatorContext: GeneratorContext = this.handlerOriginalFunctionMap.get(fn)
+    const functionName = `${fn.name}`
+    const generatorContext: GeneratorContext = this.handlerOriginalFunctionMap.get(functionName)
     return yield apply(generatorContext.context, generatorContext.fn, <any>rest)
   }
 }
@@ -133,6 +125,7 @@ export interface SagaMeta {
   readonly handler: any
   readonly name: string
   readonly direct?: boolean
+  readonly moduleId: string
 }
 
 interface SitkaAction extends Action {
@@ -168,7 +161,7 @@ export class Sitka<MODULES = {}> {
   protected registeredModules: MODULES
   private dispatch?: Dispatch
   private sitkaOptions: SitkaOptions
-  private handlerOriginalFunctionMap = new Map<Function, GeneratorContext>()
+  private handlerOriginalFunctionMap = new Map<string, GeneratorContext>()
 
   constructor(sitkaOptions?: SitkaOptions) {
     this.sitkaOptions = sitkaOptions
@@ -255,94 +248,112 @@ export class Sitka<MODULES = {}> {
     }
   }
 
-  public register<SITKA_MODULE extends SitkaModule<ModuleState, MODULES>>(instances: SITKA_MODULE[]): void {
-    instances.forEach(instance => {
-      const methodNames = getInstanceMethodNames(instance, Object.prototype)
-      const handlers = methodNames.filter(m => m.indexOf('handle') === 0)
+  private registerInstance<SITKA_MODULE extends SitkaModule<ModuleState, MODULES>>(instance: SITKA_MODULE)  {
+    function renameFunction(function_, name) {
+      return Object.defineProperty(function_, 'name', {value: name, configurable: true});
+    }
 
-      const { moduleName } = instance
-      const { middlewareToAdd, sagas, forks, reducersToCombine, doDispatch: dispatch } = this
+    const methodNames = getInstanceMethodNames(instance, Object.prototype)
+    const handlers = [...methodNames].filter(m => m.startsWith('handle'))
 
-      instance.modules = this.getModules()
-      instance.handlerOriginalFunctionMap = this.handlerOriginalFunctionMap
+    const { moduleName } = instance
+    const { middlewareToAdd, sagas, forks, reducersToCombine, doDispatch: dispatch } = this
 
-      middlewareToAdd.push(...instance.provideMiddleware())
+    instance.modules = this.getModules()
+    instance.handlerOriginalFunctionMap = this.handlerOriginalFunctionMap
 
-      instance.provideForks().forEach(f => {
-        forks.push(f.bind(instance))
-      })
+    middlewareToAdd.push(...instance.provideMiddleware())
 
-      handlers.forEach(s => {
-        // tslint:disable:ban-types
-        const original: Function = instance[s] // tslint:disable:no-any
+    instance.provideForks().forEach(f => {
+      forks.push(f.bind(instance))
+    })
 
-        const handlerKey = createHandlerKey(moduleName, s)
+    handlers.forEach(s => {
+      // tslint:disable:ban-types
+      const original: Function = instance[s] // tslint:disable:no-any
 
-        function patched(): void {
-          const args = arguments
-          const action: SitkaAction = {
-            _args: args,
-            _moduleId: moduleName,
-            type: handlerKey,
-          }
+      const handlerKey = createHandlerKey(moduleName, s)
 
-          dispatch(action)
+      function patched(): void {
+        const args = arguments
+        const action: SitkaAction = {
+          _args: args,
+          _moduleId: moduleName,
+          type: handlerKey,
         }
 
-        sagas.push({
-          handler: original,
-          name: createHandlerKey(moduleName, s),
-        })
-        // tslint:disable-next-line:no-any
-        instance[s] = patched
-        this.handlerOriginalFunctionMap.set(patched, {
-          handlerKey,
-          fn: original,
-          context: instance,
-        })
-      })
-
-      if (instance.defaultState !== undefined) {
-        // create reducer
-        const reduxKey: string = instance.reduxKey()
-        const defaultState = instance.defaultState
-        const actionType: string = createStateChangeKey(reduxKey)
-
-        reducersToCombine[reduxKey] = (state: ModuleState = defaultState, action: PayloadAction): ModuleState => {
-          if (action.type !== actionType) {
-            return state
-          }
-
-          const type = createStateChangeKey(moduleName)
-          const payload = action.payload
-
-          if (!!payload) {
-            return payload
-          }
-
-          const newState: ModuleState = Object.keys(action)
-            .filter(k => k !== 'type')
-            .reduce((acc, k) => {
-              const val = action[k]
-              if (k === type) {
-                return val
-              }
-
-              if (val === null || typeof val === 'undefined') {
-                return Object.assign(acc, {
-                  [k]: null,
-                })
-              }
-
-              return Object.assign(acc, {
-                [k]: val,
-              })
-            }, Object.assign({}, state)) as ModuleState
-
-          return newState
-        }
+        dispatch(action)
       }
 
+      const functionName = `${moduleName}_${original.name}`
+      const patchedRenamed = renameFunction(patched, `${moduleName}_${original.name}`)
+      // console.log('patchedRenamed', patchedRenamed.name)
+
+      sagas.push({
+        handler: original,
+        name: createHandlerKey(moduleName, s),
+        moduleId: moduleName,
+      })
+      // tslint:disable-next-line:no-any
+      instance[s] = patchedRenamed
+
+      // console.log(instance.moduleName, ':', 'register.functionName', functionName)
+      this.handlerOriginalFunctionMap.set(functionName, {
+        handlerKey,
+        fn: original,
+        context: instance,
+      })
+    })
+
+    if (instance.defaultState !== undefined) {
+      // create reducer
+      const reduxKey: string = instance.reduxKey()
+      const defaultState = instance.defaultState
+      const actionType: string = createStateChangeKey(reduxKey)
+
+      reducersToCombine[reduxKey] = (state: ModuleState = defaultState, action: PayloadAction): ModuleState => {
+        if (action.type !== actionType) {
+          return state
+        }
+
+        const type = createStateChangeKey(moduleName)
+        const payload = action.payload
+
+        if (!!payload) {
+          return payload
+        }
+
+        const newState: ModuleState = Object.keys(action)
+          .filter(k => k !== 'type')
+          .reduce((acc, k) => {
+            const val = action[k]
+            if (k === type) {
+              return val
+            }
+
+            if (val === null || typeof val === 'undefined') {
+              return Object.assign(acc, {
+                [k]: null,
+              })
+            }
+
+            return Object.assign(acc, {
+              [k]: val,
+            })
+          }, Object.assign({}, state)) as ModuleState
+
+        return newState
+      }
+    }
+  }
+
+  public register<SITKA_MODULE extends SitkaModule<ModuleState, MODULES>>(instances: SITKA_MODULE[]): void {
+
+    instances.forEach(instance => {
+      const moduleName = instance.moduleName
+      // console.log(instance.moduleName)
+      this.registerInstance(instance)
+      
       this.registeredModules[moduleName] = instance
     })
 
@@ -350,8 +361,15 @@ export class Sitka<MODULES = {}> {
     instances.forEach(instance => {
       const { sagas } = this
       const subscribers = instance.provideSubscriptions()
+
+      for (let i = 0; i < subscribers.length; i++) {
+      }
+
+
       sagas.push(...subscribers)
     })
+
+    // console.log("----->", JSON.stringify(this.sagas, null, 1))
   }
 
   private getDefaultState(): {} {
@@ -363,25 +381,36 @@ export class Sitka<MODULES = {}> {
 
   private createRoot(): () => IterableIterator<{}> {
     const { sagas, forks, registeredModules } = this
+    // console.log("**** ", sagas.map(n => n.name).join(","))
 
     function* root(): IterableIterator<{}> {
       /* tslint:disable */
       const toYield: ForkEffect[] = []
 
       // generators
-      for (let i = 0; i < sagas.length; i++) {
-        const s: SagaMeta = sagas[i]
-        if (s.direct) {
-          const item: any = yield takeEvery(s.name, s.handler)
-          toYield.push(item)
-        } else {
-          const generator = function* (action: SitkaAction): {} {
-            const instance: {} = registeredModules[action._moduleId]
-            yield apply(instance, s.handler, action._args)
-          }
-          const item: any = yield takeEvery(s.name, generator)
-          toYield.push(item)
+      const grouped = sagas.reduce((acc, next) => {
+        return {
+          ...acc,
+          [next.name]: [...(acc[next.name] || []), next]
         }
+      }, {})
+
+      const names = Object.keys(grouped)
+      for (let i = 0; i < names.length; i++) {
+        const name = names[i]
+        const nameGroup = grouped[name]
+
+        const megaGenerator = function* (action?: any): {} {
+          for (let j = 0; j < nameGroup.length; j++) {
+            const s = nameGroup[j]
+            // if (nameGroup.length > 0) console.log("YIELD", name, action, j + 1, 'of', nameGroup.length, s.handler.name)
+            const instance: {} = registeredModules[action?._moduleId || s.moduleId]
+            yield apply(instance, s.handler, action?._args)
+          }
+        }
+
+        const item: any = yield takeEvery(name, megaGenerator)
+        toYield.push(item)
       }
 
       // forks

@@ -13,7 +13,7 @@ interface GeneratorContext {
 }
 export declare abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
     modules: MODULES;
-    handlerOriginalFunctionMap: Map<Function, GeneratorContext>;
+    handlerOriginalFunctionMap: Map<string, GeneratorContext>;
     abstract moduleName: string;
     constructor();
     reduxKey(): string;

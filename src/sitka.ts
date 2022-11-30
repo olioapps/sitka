@@ -1,14 +1,4 @@
-import {
-  Action,
-  applyMiddleware,
-  combineReducers, compose, createStore,
-  DeepPartial,
-  Dispatch,
-  Middleware,
-  ReducersMapObject,
-  Store,
-  StoreEnhancer
-} from 'redux'
+import { Action, applyMiddleware, combineReducers, compose, createStore, DeepPartial, Dispatch, Middleware, ReducersMapObject, Store, StoreEnhancer } from 'redux'
 import { createLogger } from 'redux-logger'
 import createSagaMiddleware, { SagaMiddleware } from 'redux-saga'
 import { all, apply, CallEffectFn, fork, ForkEffect, put, select, takeEvery } from 'redux-saga/effects'
@@ -31,7 +21,7 @@ interface GeneratorContext {
 
 export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
   public modules: MODULES
-  handlerOriginalFunctionMap = new Map<Function, GeneratorContext>()
+  handlerOriginalFunctionMap = new Map<string, GeneratorContext>()
 
   public abstract moduleName: string
 
@@ -87,6 +77,8 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
   // can be either the action type string, or the module function to watch
   protected createSubscription(actionTarget: string | Function, handler: CallEffectFn<any>): SagaMeta {
     if (typeof actionTarget === 'string') {
+      // console.log("---> string", actionTarget)
+
       return {
         name: actionTarget,
         handler,
@@ -94,7 +86,8 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
         moduleId: this.moduleName,
       }
     } else {
-      const generatorContext: GeneratorContext = this.handlerOriginalFunctionMap.get(actionTarget)
+      // console.log("---> fn", actionTarget.name)
+      const generatorContext: GeneratorContext = this.handlerOriginalFunctionMap.get(actionTarget.name)
       return {
         name: generatorContext.handlerKey,
         handler,
@@ -117,7 +110,7 @@ export abstract class SitkaModule<MODULE_STATE extends ModuleState, MODULES> {
   }
 
   protected *callAsGenerator(fn: Function, ...rest: any[]): {} {
-    const generatorContext: GeneratorContext = this.handlerOriginalFunctionMap.get(fn)
+    const generatorContext: GeneratorContext = this.handlerOriginalFunctionMap.get(fn.name)
     return yield apply(generatorContext.context, generatorContext.fn, <any>rest)
   }
 }
@@ -157,6 +150,10 @@ export interface SitkaOptions {
   readonly sitkaInState?: boolean
 }
 
+function renameFunction(fn, name: string) {
+  return Object.defineProperty(fn, 'name', {value: name, configurable: true});
+}
+
 // tslint:disable-next-line:max-classes-per-file
 export class Sitka<MODULES = {}> {
   // tslint:disable-next-line:no-any
@@ -168,7 +165,7 @@ export class Sitka<MODULES = {}> {
   protected registeredModules: MODULES
   private dispatch?: Dispatch
   private sitkaOptions: SitkaOptions
-  private handlerOriginalFunctionMap = new Map<Function, GeneratorContext>()
+  private handlerOriginalFunctionMap = new Map<string, GeneratorContext>()
 
   constructor(sitkaOptions?: SitkaOptions) {
     this.sitkaOptions = sitkaOptions
@@ -277,8 +274,9 @@ export class Sitka<MODULES = {}> {
         const original: Function = instance[s] // tslint:disable:no-any
 
         const handlerKey = createHandlerKey(moduleName, s)
-
+        // console.log("PATCHING", handlerKey)
         function patched(): void {
+          // console.log("PATCHED INVOKED - ", handlerKey)
           const args = arguments
           const action: SitkaAction = {
             _args: args,
@@ -288,15 +286,16 @@ export class Sitka<MODULES = {}> {
 
           dispatch(action)
         }
+        const patchRenamed = renameFunction(patched, handlerKey)
 
         sagas.push({
           handler: original,
-          name: createHandlerKey(moduleName, s),
-        moduleId: moduleName,
+          name: handlerKey,
+          moduleId: moduleName,
         })
         // tslint:disable-next-line:no-any
-        instance[s] = patched
-        this.handlerOriginalFunctionMap.set(patched, {
+        instance[s] = patchRenamed
+        this.handlerOriginalFunctionMap.set(handlerKey, {
           handlerKey,
           fn: original,
           context: instance,
@@ -386,13 +385,14 @@ export class Sitka<MODULES = {}> {
         const megaGenerator = function* (action?: any): {} {
           for (let j = 0; j < nameGroup.length; j++) {
             const s = nameGroup[j]
-            // if (nameGroup.length > 1) console.log("YIELD", name, action, j + 1, 'of', nameGroup.length, s.handler.name)
+            // console.log("YIELD", name, action, j + 1, 'of', nameGroup.length, s.handler.name)
             const instance: {} = registeredModules[action?._moduleId || s.moduleId]
             yield apply(instance, s.handler, action?._args)
           }
         }
 
-        const item: any = yield takeEvery(name, megaGenerator)
+        // console.log("YIELD SAGA", name, "WITH", nameGroup.length, "LISTENERS")
+        const item: any = takeEvery(name, megaGenerator)
         toYield.push(item)
       }
 

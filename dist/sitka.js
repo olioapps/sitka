@@ -111,6 +111,7 @@ var SitkaModule = /** @class */ (function () {
     // can be either the action type string, or the module function to watch
     SitkaModule.prototype.createSubscription = function (actionTarget, handler) {
         if (typeof actionTarget === 'string') {
+            // console.log("---> string", actionTarget)
             return {
                 name: actionTarget,
                 handler: handler,
@@ -119,7 +120,8 @@ var SitkaModule = /** @class */ (function () {
             };
         }
         else {
-            var generatorContext = this.handlerOriginalFunctionMap.get(actionTarget);
+            // console.log("---> fn", actionTarget.name)
+            var generatorContext = this.handlerOriginalFunctionMap.get(actionTarget.name);
             return {
                 name: generatorContext.handlerKey,
                 handler: handler,
@@ -146,7 +148,7 @@ var SitkaModule = /** @class */ (function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    generatorContext = this.handlerOriginalFunctionMap.get(fn);
+                    generatorContext = this.handlerOriginalFunctionMap.get(fn.name);
                     return [4 /*yield*/, effects_1.apply(generatorContext.context, generatorContext.fn, rest)];
                 case 1: return [2 /*return*/, _a.sent()];
             }
@@ -162,6 +164,9 @@ var SitkaMeta = /** @class */ (function () {
     return SitkaMeta;
 }());
 exports.SitkaMeta = SitkaMeta;
+function renameFunction(fn, name) {
+    return Object.defineProperty(fn, 'name', { value: name, configurable: true });
+}
 // tslint:disable-next-line:max-classes-per-file
 var Sitka = /** @class */ (function () {
     function Sitka(sitkaOptions) {
@@ -256,7 +261,9 @@ var Sitka = /** @class */ (function () {
                 // tslint:disable:ban-types
                 var original = instance[s]; // tslint:disable:no-any
                 var handlerKey = createHandlerKey(moduleName, s);
+                // console.log("PATCHING", handlerKey)
                 function patched() {
+                    // console.log("PATCHED INVOKED - ", handlerKey)
                     var args = arguments;
                     var action = {
                         _args: args,
@@ -265,14 +272,15 @@ var Sitka = /** @class */ (function () {
                     };
                     dispatch(action);
                 }
+                var patchRenamed = renameFunction(patched, handlerKey);
                 sagas.push({
                     handler: original,
-                    name: createHandlerKey(moduleName, s),
+                    name: handlerKey,
                     moduleId: moduleName,
                 });
                 // tslint:disable-next-line:no-any
-                instance[s] = patched;
-                _this.handlerOriginalFunctionMap.set(patched, {
+                instance[s] = patchRenamed;
+                _this.handlerOriginalFunctionMap.set(handlerKey, {
                     handlerKey: handlerKey,
                     fn: original,
                     context: instance,
@@ -345,54 +353,37 @@ var Sitka = /** @class */ (function () {
                         }, {});
                         names = Object.keys(grouped);
                         _loop_1 = function (i) {
-                            var name_1, nameGroup, megaGenerator, item;
-                            return __generator(this, function (_a) {
-                                switch (_a.label) {
-                                    case 0:
-                                        name_1 = names[i];
-                                        nameGroup = grouped[name_1];
-                                        megaGenerator = function (action) {
-                                            var j, s, instance;
-                                            return __generator(this, function (_a) {
-                                                switch (_a.label) {
-                                                    case 0:
-                                                        j = 0;
-                                                        _a.label = 1;
-                                                    case 1:
-                                                        if (!(j < nameGroup.length)) return [3 /*break*/, 4];
-                                                        s = nameGroup[j];
-                                                        instance = registeredModules[(action === null || action === void 0 ? void 0 : action._moduleId) || s.moduleId];
-                                                        return [4 /*yield*/, effects_1.apply(instance, s.handler, action === null || action === void 0 ? void 0 : action._args)];
-                                                    case 2:
-                                                        _a.sent();
-                                                        _a.label = 3;
-                                                    case 3:
-                                                        j++;
-                                                        return [3 /*break*/, 1];
-                                                    case 4: return [2 /*return*/];
-                                                }
-                                            });
-                                        };
-                                        return [4 /*yield*/, effects_1.takeEvery(name_1, megaGenerator)];
-                                    case 1:
-                                        item = _a.sent();
-                                        toYield.push(item);
-                                        return [2 /*return*/];
-                                }
-                            });
+                            var name_1 = names[i];
+                            var nameGroup = grouped[name_1];
+                            var megaGenerator = function (action) {
+                                var j, s, instance;
+                                return __generator(this, function (_a) {
+                                    switch (_a.label) {
+                                        case 0:
+                                            j = 0;
+                                            _a.label = 1;
+                                        case 1:
+                                            if (!(j < nameGroup.length)) return [3 /*break*/, 4];
+                                            s = nameGroup[j];
+                                            instance = registeredModules[(action === null || action === void 0 ? void 0 : action._moduleId) || s.moduleId];
+                                            return [4 /*yield*/, effects_1.apply(instance, s.handler, action === null || action === void 0 ? void 0 : action._args)];
+                                        case 2:
+                                            _a.sent();
+                                            _a.label = 3;
+                                        case 3:
+                                            j++;
+                                            return [3 /*break*/, 1];
+                                        case 4: return [2 /*return*/];
+                                    }
+                                });
+                            };
+                            // console.log("YIELD SAGA", name, "WITH", nameGroup.length, "LISTENERS")
+                            var item = effects_1.takeEvery(name_1, megaGenerator);
+                            toYield.push(item);
                         };
-                        i = 0;
-                        _a.label = 1;
-                    case 1:
-                        if (!(i < names.length)) return [3 /*break*/, 4];
-                        return [5 /*yield**/, _loop_1(i)];
-                    case 2:
-                        _a.sent();
-                        _a.label = 3;
-                    case 3:
-                        i++;
-                        return [3 /*break*/, 1];
-                    case 4:
+                        for (i = 0; i < names.length; i++) {
+                            _loop_1(i);
+                        }
                         // forks
                         for (i = 0; i < forks.length; i++) {
                             f = forks[i];
@@ -401,7 +392,7 @@ var Sitka = /** @class */ (function () {
                         }
                         /* tslint:enable */
                         return [4 /*yield*/, effects_1.all(toYield)];
-                    case 5:
+                    case 1:
                         /* tslint:enable */
                         _a.sent();
                         return [2 /*return*/];
